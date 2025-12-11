@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Plataforma líder en herramientas de Geometría Sagrada. Generadores interactivos de Sri Yantra, Flor de la Vida, Sólidos Platónicos, Árbol de la Vida y Toroide 3D.">
+    <meta name="keywords" content="Geometría Sagrada, Sri Yantra, Flor de la Vida, Sólidos Platónicos, Árbol de la Vida, Cábala, Mandalas, Toroide, Vórtex, Meditación Visual">
+    <meta name="author" content="Geometría Sagrada Top">
+    
+    <title>Geometría Sagrada TOP | Laboratorio Digital de Patrones Universales</title>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+      crossorigin="anonymous"></script>
+
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if(event.keyCode == 123) { return false; } 
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { return false; } 
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) { return false; } 
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) { return false; } 
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { return false; } 
+        }
+    </script>
+
+    <style>
+        body {
+            margin: 0;
+            background-color: #050505;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #e0e0e0;
+            line-height: 1.8;
+        }
+        
+        /* Hero Section */
+        header {
+            text-align: center;
+            padding: 80px 20px;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+            border-bottom: 1px solid #333;
+        }
+        h1 { font-size: 3em; color: #FFD700; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+        p.subtitle { color: #aaa; font-size: 1.2em; max-width: 700px; margin: 0 auto; font-weight: 300; }
+
+        /* Grid de Apps */
+        .apps-container { background-color: #0a0a0a; padding: 40px 0; border-bottom: 1px solid #222; }
+        .section-title { text-align: center; color: #fff; margin-top: 0; font-weight: 300; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .app-card {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.1);
+            border-color: #FFD700;
+        }
+        .card-img {
+            height: 220px;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            overflow: hidden;
+        }
+        .card-content { padding: 25px; }
+        .card-content h3 { margin: 0 0 10px 0; color: #FFD700; font-size: 1.4em; }
+        .card-content p { font-size: 0.95em; color: #999; margin: 0; line-height: 1.4; }
+        
+        .tag { background: #333; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.6em; text-transform: uppercase; vertical-align: middle; margin-left: 8px;}
+        .tag-new { background: #FFD700; color: #000; }
+        .tag-update { background: #00FFFF; color: #000; }
+        .tag-zen { background: #FF0099; color: #fff; }
+        .tag-3d { background: #00FF88; color: #000; } 
+        .tag-ether { background: #00BFFF; color: #000; } /* Estilo para Solidos */
+        .soon { opacity: 0.6; pointer-events: none; filter: grayscale(1); }
+
+        /* Banner Publicidad */
+        .ad-container {
+            max-width: 900px; margin: 50px auto;
+            min-height: 120px; background: #0f0f0f;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px dashed #333; color: #444;
+        }
+
+        /* SEO Content */
+        .content-wrapper { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+        article h2 { color: #FFD700; font-size: 2em; margin-top: 60px; margin-bottom: 25px; border-left: 5px solid #FF4500; padding-left: 20px; }
+        article h3 { color: #eee; margin-top: 40px; font-size: 1.5em; }
+        article p { margin-bottom: 20px; font-size: 1.1em; color: #ccc; text-align: justify; }
+        
+        /* FAQ */
+        .faq-section { background-color: #111; padding: 60px 20px; margin-top: 40px; border-radius: 12px; }
+        .faq-item { margin-bottom: 30px; }
+        .faq-question { color: #FFD700; font-weight: bold; font-size: 1.2em; display: block; margin-bottom: 10px; }
+        .faq-answer { color: #aaa; }
+
+        footer { text-align: center; padding: 60px 20px; color: #555; font-size: 0.9em; border-top: 1px solid #222; background-color: #000; margin-top: 50px; }
+        footer a { color: #777; text-decoration: none; margin: 0 15px; transition: color 0.2s;}
+        footer a:hover { color: #FFD700; }
+        
+        @media (max-width: 700px) {
+            h1 { font-size: 2em; }
+            .apps-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Geometría Sagrada . TOP</h1>
+    <p class="subtitle">La suite definitiva de herramientas paramétricas para el diseño, estudio y meditación de patrones universales.</p>
+</header>
+
+<div class="apps-container">
+    <h2 class="section-title">Laboratorios Interactivos</h2>
+    
+    <div class="ad-container">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-3150277567590534"
+             data-ad-slot="3325375177"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+
+    <div class="apps-grid">
+        
+        <a href="sri-yantra/index.html" class="app-card">
+            <div class="card-img">
+                <img src="thumbnail-sri.png" alt="Sri Yantra Lab" style="width:100%; height:100%; object-fit:cover;">
+            </div> 
+            <div class="card-content">
+                <h3>Sri Yantra Lab <span class="tag tag-new">V8.0</span></h3>
+                <p>Generador paramétrico del Sri Chakra. Ajusta las 14 intersecciones, controla Shiva/Shakti y exporta en HD.</p>
+            </div>
+        </a>
+
+        <a href="flor-vida/index.html" class="app-card">
+            <div class="card-img">
+                <img src="thumbnail-flor-vida.png" alt="Flor de la Vida Lab" style="width:100%; height:100%; object-fit:cover;">
+            </div> 
+            <div class="card-content">
+                <h3>Flor de la Vida <span class="tag tag-update">V4.0</span></h3>
+                <p>Traza la Semilla, el Huevo y el Fruto de la Vida. Geometría hexagonal con expansión animada y colores neón.</p>
+            </div>
+        </a>
+
+        <a href="arbol-vida/index.html" class="app-card">
+            <div class="card-img">
+                <img src="thumbnail-arbol-vida.png" alt="Árbol de la Vida Lab" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <div class="card-content">
+                <h3>Árbol de la Vida <span class="tag tag-new">NUEVO</span></h3>
+                <p>Mapa interactivo de las Sephirot. Visualiza el Rayo Relampagueante y la conexión oculta con la Flor de la Vida.</p>
+            </div>
+        </a>
+
+        <a href="mandala-mano/index.html" class="app-card">
+            <div class="card-img">
+                <img src="thumbnail-mandala-mano.png" alt="Generador de Mandalas" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <div class="card-content">
+                <h3 style="color:#FF0099;">Mandalas a Mano <span class="tag tag-zen">ZEN</span></h3>
+                <p>Dibujo libre con simetría radial automática y estabilizador. Relaja tu mente creando patrones caleidoscópicos únicos.</p>
+            </div>
+        </a>
+
+        <a href="toroide-vortex/index.html" class="app-card">
+            <div class="card-img">
+                <img src="thumbnail-toroide-vortex.png" alt="Toroide Vórtex 3D" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <div class="card-content">
+                <h3 style="color:#00FF88;">Toroide Vórtex <span class="tag tag-3d">3D</span></h3>
+                <p>Visualizador tridimensional del flujo de energía universal. Anima la rotación, ajusta la densidad y siente el campo magnético.</p>
+            </div>
+        </a>
+
+        <a href="solidos-platonicos/index.html" class="app-card">
+            <div class="card-img">
+                <img src="thumbnail-solidos-platonicos.png" alt="Sólidos Platónicos 3D" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <div class="card-content">
+                <h3 style="color:#00BFFF;">Sólidos Platónicos <span class="tag tag-ether">3D</span></h3>
+                <p>Constructor de los 5 cuerpos geométricos perfectos. Explora el Tetraedro, Cubo, Octaedro, Dodecaedro e Icosaedro y sus elementos.</p>
+            </div>
+        </a>
+
+        <a href="metatron-cube/index.html" class="app-card">
+            <div class="card-img">
+                <img src="thumbnail-metatron.png" alt="Cubo de Metatrón Interactivo" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <div class="card-content">
+                <h3 style="color:#9D00FF;">Cubo de Metatrón <span class="tag" style="background:#9D00FF; color:#fff;">MASTER</span></h3>
+                <p>La llave de la creación. Trazador vectorial del Fruto de la Vida, la Merkaba y la geometría oculta del universo.</p>
+            </div>
+        </a>
+
+        <a href="golden-spiral/index.html" class="app-card">
+            <div class="card-img">
+                <img src="thumbnail-golden.png" alt="Espiral Áurea Fibonacci" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <div class="card-content">
+                <h3 style="color:#FFD700;">Espiral Áurea <span class="tag" style="background:#FFD700; color:#000;">NATURE</span></h3>
+                <p>El código de la vida. Visualiza la secuencia de Fibonacci y la Phyllotaxis que ordena desde girasoles hasta galaxias.</p>
+            </div>
+        </a>
+
+        <a href="cymatics-lab/index.html" class="app-card">
+            <div class="card-img">
+                <img src="thumbnail-cymatics.png" alt="Simulador de Cimática Chladni" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <div class="card-content">
+                <h3 style="color:#00FFFF;">Cimática Lab <span class="tag" style="background:#00FFFF; color:#000;">SOUND</span></h3>
+                <p>El sonido hecho visible. Simula placas de Chladni y observa cómo la vibración pura crea geometría sagrada en tiempo real.</p>
+            </div>
+        </a>
+
+        <a href="chartres-labyrinth/index.html" class="app-card">
+            <div class="card-img">
+                <img src="thumbnail-labyrinth.png" alt="Laberinto de Meditación" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <div class="card-content">
+                <h3 style="color:#d4af37;">Laberinto Sagrado <span class="tag" style="background:#d4af37; color:#000;">ZEN</span></h3>
+                <p>El camino hacia el interior. Recorre virtualmente el patrón de la Catedral de Chartres. Una herramienta para calmar la mente y centrar el espíritu.</p>
+            </div>
+        </a>
+
+       <a href="fractal-explorer/index.html" class="app-card">
+            <div class="card-img">
+                <img src="thumbnail-fractal.png" alt="Explorador Fractal Mandelbrot" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <div class="card-content">
+                <h3 style="color:#d500f9;">Fractal Infinito <span class="tag" style="background:#d500f9; color:#fff;">COSMIC</span></h3>
+                <p>El principio de "Como es Arriba, es Abajo". Explora el conjunto de Mandelbrot y la geometría del infinito y la auto-similitud.</p>
+            </div>
+        </a>
+
+        <a href="harmonograph-lab/index.html" class="app-card">
+            <div class="card-img">
+                <img src="thumbnail-harmonograph.png" alt="Harmonógrafo Musical" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <div class="card-content">
+                <h3 style="color:#39ff14;">Harmonógrafo <span class="tag" style="background:#39ff14; color:#000;">MUSIC</span></h3>
+                <p>La danza de los péndulos. Visualiza acordes musicales como figuras geométricas (Lissajous) y descubre la armonía oculta.</p>
+            </div>
+        </a>
+        
+    </div>
+</div>
+
+<div class="content-wrapper">
+    
+    <article>
+        <h2>El Lenguaje del Universo: ¿Por qué usamos herramientas digitales?</h2>
+        <p>La <strong>Geometría Sagrada</strong> es mucho más que dibujos estéticos; es el estudio de las formas y patrones fundamentales que estructuran el tiempo, el espacio y la vida misma. Desde la espiral de una galaxia hasta la disposición de los pétalos de una flor, todo sigue un código matemático preciso.</p>
+        <p>En <strong>GeometríaSagrada.top</strong>, fusionamos la sabiduría ancestral con la tecnología moderna. Nuestras herramientas paramétricas te permiten explorar estos patrones sin necesidad de regla y compás, facilitando la comprensión profunda de su estructura.</p>
+
+        <div class="ad-container">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-3150277567590534"
+                 data-ad-slot="3325375177"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+
+        <h2>Nuestras Herramientas Principales</h2>
+        
+        <h3>1. Sri Yantra (El Rey de los Yantras)</h3>
+        <p>Compuesto por nueve triángulos entrelazados que radian desde el centro. Cuatro representan la energía masculina (Shiva) y cinco la femenina (Shakti). Nuestro laboratorio permite ajustar las intersecciones con precisión milimétrica.</p>
+        
+        <h3>2. Flor de la Vida (La Matriz de la Creación)</h3>
+        <p>El patrón geométrico que contiene todas las formas fundamentales del universo. Nuestra herramienta permite visualizar el "Génesis" paso a paso, desde la Mónada hasta el Fruto de la Vida.</p>
+
+        <h3>3. Árbol de la Vida (El Mapa del Alma)</h3>
+        <p>Un diagrama místico de la Cábala que explica el descenso de la energía divina hacia la materia. Nuestro laboratorio revela su conexión geométrica perfecta con la Flor de la Vida.</p>
+
+        <h3>4. Mandalas a Mano (Arte Zen)</h3>
+        <p>A diferencia de la geometría estricta, esta herramienta está diseñada para el flujo libre. Utiliza un motor de espejos radiales y estabilización de trazo para multiplicar tus movimientos, permitiéndote entrar en un estado meditativo de "No Mente" mientras creas belleza.</p>
+
+        <h3>5. Toroide Vórtex (El Flujo de la Vida)</h3>
+        <p>Una herramienta 3D avanzada para visualizar el patrón de energía autosostenible que utilizan desde los átomos hasta las galaxias. Ideal para visualizar campos magnéticos y realizar ejercicios de respiración consciente sincronizados con el giro.</p>
+
+        <h3>6. Sólidos Platónicos (Los Ladrillos del Universo)</h3>
+        <p>La culminación de la geometría tridimensional. Nuestra suite 3D te permite manipular los cinco poliedros regulares convexos (Tetraedro, Cubo, Octaedro, Dodecaedro e Icosaedro), revelando sus correspondencias elementales y su perfecta inscripción en la esfera.</p>
+        
+        <h3>7. Cubo de Metatrón (El Arquitecto)</h3>
+        <p>Conocido como el "Mapa de la Creación". Esta herramienta avanzada revela cómo la energía masculina (líneas rectas) conecta los 13 centros de la energía femenina (Fruto de la Vida) para generar los planos de toda la materia, conteniendo en su interior los 5 Sólidos Platónicos y la Merkaba.</p>   
+
+        <h3>8. Espiral Áurea (La Huella de la Naturaleza)</h3>
+        <p>¿Por qué los girasoles son matemáticamente perfectos? Esta herramienta simula el crecimiento biológico (Phyllotaxis) basado en la proporción áurea (Phi). Experimenta cómo una milésima de grado en el ángulo de crecimiento marca la diferencia entre el caos y el orden divino de la vida.</p>
+
+        <h3>9. Cimática (La Geometría del Sonido)</h3>
+        <p>En el principio fue el Verbo (Vibración). Este laboratorio simula una placa de Chladni, demostrando cómo las diferentes frecuencias sonoras organizan la materia caótica en mandalas ordenados. Es la prueba científica de que el sonido es el arquitecto de la forma.</p>
+
+        <h3>10. Laberinto Sagrado (Meditación en Movimiento)</h3>
+        <p>A diferencia de un rompecabezas, un laberinto sagrado tiene un solo camino (unicursal) que te lleva inevitablemente al centro. Basado en el diseño de la Catedral de Chartres, esta herramienta te permite realizar una peregrinación virtual, sincronizando tu respiración con el recorrido para alcanzar un estado de coherencia cardíaca y paz mental.</p>
+
+        <h3>11. Fractal Mandelbrot (El Infinito)</h3>
+        <p>Esta herramienta te permite navegar por el infinito matemático. Los fractales demuestran el principio hermético de correspondencia: la parte contiene al todo. Es el mismo patrón geométrico que utilizan las nubes, las costas, los pulmones y las galaxias para maximizar su existencia.</p>
+
+        <h3>12. Harmonógrafo (Música Visual)</h3>
+        <p>¿Cómo se ve un acorde musical? Esta herramienta utiliza la física de péndulos múltiples para dibujar las relaciones armónicas. Las proporciones simples (consonancia) crean belleza y simetría, mientras que las complejas (disonancia) generan caos. Es la demostración final de que el universo es una sinfonía geométrica.</p>
+        
+    </article>
+
+    <div class="faq-section">
+        <h2 style="margin-top:0; border:none; padding:0;">Preguntas Frecuentes (FAQ)</h2>
+        
+        <div class="faq-item">
+            <span class="faq-question">¿Puedo usar las imágenes para mis proyectos?</span>
+            <div class="faq-answer">Sí. Las imágenes que generas y exportas son tuyas. Puedes usarlas libremente para tatuajes, logos o arte.</div>
+        </div>
+
+        <div class="faq-item">
+            <span class="faq-question">¿Funcionan en dispositivos móviles?</span>
+            <div class="faq-answer">Absolutamente. Todos nuestros laboratorios son 100% responsivos y funcionan en teléfonos, tablets y ordenadores, sin embargo recomiendo usar con pantallas grandes.</div>
+        </div>
+    </div>
+    
+    <div class="ad-container">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-3150277567590534"
+             data-ad-slot="3325375177"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+
+</div>
+
+<footer>
+    <div style="margin-bottom: 30px;">
+        <p style="margin-bottom: 10px; color: #aaa;">¿Te ha sido útil?</p>
+        <a href="https://www.paypal.com/paypalme/pbazan" target="_blank" style="
+            display: inline-block; background-color: #0070BA; color: white; padding: 10px 20px;
+            border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9em;
+            box-shadow: 0 4px 15px rgba(0,112,186, 0.3); transition: transform 0.2s;
+        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            ☕ Invítame a un café (PayPal)
+        </a>
+    </div>
+
+    <p>&copy; 2025 Geometría Sagrada Top.</p>
+    <br>
+    <a href="legal.html#privacidad">Política de Privacidad</a>
+    <a href="legal.html#terminos">Términos</a>
+    <a href="legal.html#cookies">Cookies</a>
+    <a href="mailto:geometriasagradatop@gmail.com">Contacto</a>
+</footer>
+
+</body>
+</html>
+
+
+
+
+
+
+
