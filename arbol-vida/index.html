@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Árbol de la Vida Lab - Geometría Sagrada TOP</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Laboratorio interactivo del Árbol de la Vida. Alineación geométrica perfecta con la Flor de la Vida.">
+    
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if(event.keyCode == 123) return false;
+            if(e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) return false;
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
+        }
+    </script>
+
+    <style>
+        body { margin: 0; background-color: #050505; font-family: 'Segoe UI', sans-serif; color: #ddd; overflow-x: hidden; display: flex; flex-direction: column; }
+        
+        #app-wrapper { display: flex; width: 100%; height: 100vh; border-bottom: 2px solid #222; }
+        
+        #canvas-container {
+            flex: 3; display: flex; justify-content: center; align-items: center;
+            background-color: #000; padding: 20px; overflow: hidden; position: relative;
+        }
+        
+        canvas { 
+            box-shadow: 0 0 80px rgba(255, 215, 0, 0.05); 
+            border-radius: 12px;
+            max-width: 98%; max-height: 98%; 
+        }
+        
+        #controls-container {
+            flex: 2; min-width: 340px; background-color: #111; padding: 20px;
+            overflow-y: auto; box-shadow: -5px 0 20px rgba(0,0,0,0.5); border-left: 1px solid #222;
+        }
+
+        h2 { color: #FFD700; margin-bottom: 20px; text-align: center; letter-spacing: 2px; text-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
+        
+        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; }
+        .export-btn {
+            flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+            transition: transform 0.1s, filter 0.2s;
+        }
+        .export-btn:hover { filter: brightness(1.2); }
+        #btnPng { background-color: #FFD700; color: #000; } 
+        #btnJpg { background-color: #444; color: #fff; border: 1px solid #777; } 
+
+        .control-group { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 18px; }
+        .control-row { display: flex; align-items: center; margin-bottom: 12px; font-size: 0.9em; }
+        .control-label { flex: 1; color: #ccc; font-weight: 500; }
+        
+        input[type=range] { flex-grow: 2; cursor: pointer; margin-right: 10px; accent-color: #FFD700; }
+        input[type=color] { border: none; width: 40px; height: 30px; border-radius: 4px; cursor: pointer; padding: 0; }
+        input[type=checkbox] { transform: scale(1.3); accent-color: #FFD700; cursor: pointer; }
+
+        .value-display { width: 35px; text-align: center; font-family: monospace; font-weight: bold; color: #fff; }
+
+        #playEmanation {
+            background: none; border: 1px solid #FFD700; color: #FFD700; 
+            border-radius: 50%; width: 30px; height: 30px; cursor: pointer; margin-right: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.2s;
+        }
+        #playEmanation:hover { background: #FFD700; color: #000; }
+
+        .content-section { max-width: 900px; margin: 0 auto; padding: 60px 20px; }
+        .ad-placeholder {
+            width: 100%; height: 120px; background: #0f0f0f; margin: 40px 0;
+            border: 1px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.8em;
+        }
+        article h2 { color: #FFD700; border-left: 4px solid #FFD700; padding-left: 15px; margin-top: 50px; font-size: 1.8em;}
+        article p { margin-bottom: 20px; font-size: 1.1em; color: #ccc; line-height: 1.8; text-align: justify; }
+        
+        footer { background-color: #000; padding: 50px 20px; text-align: center; border-top: 1px solid #222; font-size: 0.9em; color: #666; }
+        footer a { color: #888; text-decoration: none; margin: 0 10px; }
+        footer a:hover { color: #FFD700; }
+
+        @media (max-width: 800px) {
+            #app-wrapper { flex-direction: column; height: auto; }
+            #canvas-container { height: 60vh; }
+            #controls-container { height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-wrapper">
+    <div id="canvas-container">
+        <canvas id="yantraCanvas"></canvas>
+    </div>
+
+    <div id="controls-container">
+        <h2>ÁRBOL DE LA VIDA LAB</h2>
+        <div class="btn-group">
+            <button id="btnPng" class="export-btn">💾 PNG</button>
+            <button id="btnJpg" class="export-btn">📸 JPG</button>
+        </div>
+
+        <div id="sliders-dock">
+            <div class="control-group">
+                <h3 style="margin-top:0; color:#eee; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">El Rayo de Creación</h3>
+                <div class="control-row">
+                    <button id="playEmanation" title="Animar">▶</button>
+                    <span class="control-label">Flujo Divino:</span>
+                    <input type="range" id="emanationRange" min="0" max="100" value="100">
+                    <span id="emanationVal" class="value-display">100%</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3 style="margin-top:0; color:#eee; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Energía & Luz</h3>
+                <div class="control-row"><span class="control-label">Fondo:</span><input type="color" id="bgColor" value="#000000"></div>
+                <div class="control-row"><span class="control-label">Esferas:</span><input type="color" id="sphereColor" value="#FFD700"></div>
+                <div class="control-row"><span class="control-label">Senderos:</span><input type="color" id="pathColor" value="#00BFFF"></div>
+                <div class="control-row"><span class="control-label">Glow:</span><input type="range" id="glowRange" min="0" max="50" value="20"></div>
+            </div>
+
+            <div class="control-group">
+                <h3 style="margin-top:0; color:#eee; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Estructura</h3>
+                <div class="control-row"><span class="control-label">Tamaño Esferas:</span><input type="range" id="sizeRange" min="5" max="40" value="15"></div>
+                <div class="control-row"><span class="control-label">Grosor Senderos:</span><input type="range" id="widthRange" min="1" max="20" value="3"></div>
+            </div>
+
+            <div class="control-group">
+                <h3 style="margin-top:0; color:#eee; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Geometría Oculta</h3>
+                <div class="control-row"><span class="control-label">Mostrar Nombres:</span><input type="checkbox" id="checkNames" checked></div>
+                <div class="control-row"><span class="control-label">Mostrar Da'at:</span><input type="checkbox" id="checkDaat"></div>
+                <div class="control-row"><span class="control-label">Pilares:</span><input type="checkbox" id="checkPillars"></div>
+                
+                <div class="control-row" style="border-top:1px solid #333; padding-top:10px; margin-top:5px;">
+                    <span class="control-label" style="color:#00FFFF; font-weight:bold;">Matriz Flor de la Vida:</span>
+                    <input type="checkbox" id="checkFlower">
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align:center; margin-top:20px;">
+            <a href="../index.html" style="color:#FFD700; text-decoration:none; font-weight:bold;">← Volver al Hub Central</a>
+        </div>
+    </div>
+</div>
+
+<section class="content-section">
+    
+    <div class="ad-placeholder">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_arbol_vida -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="6722528856"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </div>
+
+    <article>
+        <h2>El Código Fuente del Alma: ¿Qué es el Árbol de la Vida?</h2>
+        <p>El <strong>Árbol de la Vida</strong> (<em>Etz Chaim</em> en hebreo) es el glifo central de la Cábala Hermética y el misticismo occidental. No es simplemente un dibujo antiguo; es un mapa multidimensional que explica la estructura del universo y de la psique humana. Describe el camino que recorre la energía divina desde lo inmanifestado hasta la materia física.</p>
+        
+        <h3>La Estructura: 10 Luces y 22 Caminos</h3>
+        <p>El diagrama se compone de 10 esferas llamadas <strong>Sephirot</strong> (emanaciones), que representan estados de conciencia o atributos divinos, unidas por 22 senderos. Juntos forman los "32 Caminos de Sabiduría".</p>
+        <ul>
+            <li><strong>Los 3 Pilares:</strong> Observa las líneas verticales en el laboratorio. El pilar izquierdo es la <em>Severidad</em> (Forma/Restricción), el derecho es la <em>Misericordia</em> (Fuerza/Expansión) y el central es el <em>Equilibrio</em>.</li>
+            <li><strong>La Tríada Superior:</strong> Kether (Corona), Chokmah (Sabiduría) y Binah (Entendimiento) existen más allá de nuestra percepción ordinaria.</li>
+            <li><strong>Da'at (La Esfera Invisible):</strong> En nuestro Lab puedes activar la casilla "Mostrar Da'at". Es el abismo, el conocimiento oculto que conecta lo divino con lo humano.</li>
+        </ul>
+
+        <div class="ad-placeholder">
+             <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_arbol_vida -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="6722528856"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        </div>
+
+        <h2>La Geometría Oculta: La Conexión con la Flor de la Vida</h2>
+        <p>Aquí es donde la magia matemática se revela. Durante siglos, místicos y geómetras han sabido que el Árbol de la Vida no es una invención arbitraria, sino que surge orgánicamente de la <strong>Flor de la Vida</strong>.</p>
+        <p><strong>Pruébalo ahora en el Lab:</strong> Activa la casilla <span style="color:#00FFFF">"Matriz Flor de la Vida"</span>. Verás algo asombroso:</p>
+        <p>Cada una de las Sephirot encaja con precisión milimétrica en los centros o intersecciones de la red hexagonal de la Flor. Esto demuestra que el Árbol de la Vida es una extracción, una "sub-rutina" dentro del patrón geométrico fundamental del universo. La Flor es la matriz femenina (el campo de posibilidades) y el Árbol es la estructura masculina (la manifestación concreta).</p>
+
+        <h3>Meditación con el Rayo Relampagueante</h3>
+        <p>El Árbol se activa mediante el "Rayo Relampagueante" (<em>Kav</em>), un zigzag de luz que baja desde Kether hasta Malkuth. Usa el deslizador de <strong>"Flujo Divino"</strong> o el botón de animación para visualizar este descenso.</p>
+        <p><strong>Ejercicio sugerido:</strong> Respira profundamente. Al inhalar, visualiza la luz llenando la esfera superior. Al exhalar, observa cómo desciende sendero a sendero hasta la tierra. Esta práctica ayuda a "aterrizar" ideas, trayendo la inspiración espiritual al plano físico.</p>
+    </article>
+
+</section>
+
+<footer>
+    <div style="margin-bottom: 30px;">
+        <p style="margin-bottom: 10px; color: #aaa;">¿Te ha servido este mapa sagrado?</p>
+        <a href="https://www.paypal.com/paypalme/pbazan" target="_blank" style="display: inline-block; background-color: #0070BA; color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(0,112,186, 0.3);">☕ Invítame a un café</a>
+    </div>
+    <p>&copy; 2025 Geometría Sagrada Top.</p>
+    <br>
+    <a href="../legal.html#privacidad">Política de Privacidad</a>
+    <a href="../legal.html#terminos">Términos</a>
+    <a href="../legal.html#cookies">Cookies</a>
+    <a href="mailto:geometriasagradatop@gmail.com">Contacto</a>
+</footer>
+
+<script>
+    const canvas = document.getElementById('yantraCanvas');
+    const ctx = canvas.getContext('2d');
+    const canvasContainer = document.getElementById('canvas-container');
+
+    // --- MATEMÁTICAS SAGRADAS ---
+    const sephirotDefs = [
+        { id: 1, name: "Kether", nameES: "Corona", gx: 0, gy: -4, color: "#fff" },       
+        { id: 2, name: "Chokmah", nameES: "Sabiduría", gx: 1, gy: -3, color: "#888" },   
+        { id: 3, name: "Binah", nameES: "Entendimiento", gx: -1, gy: -3, color: "#222" }, 
+        { id: 11, name: "Da'at", nameES: "Conocimiento", gx: 0, gy: -2, color: "#9932CC", hidden: true }, 
+        { id: 4, name: "Chesed", nameES: "Misericordia", gx: 1, gy: -1, color: "#00f" }, 
+        { id: 5, name: "Gevurah", nameES: "Severidad", gx: -1, gy: -1, color: "#f00" },  
+        { id: 6, name: "Tiferet", nameES: "Belleza", gx: 0, gy: 0, color: "#FFD700" },   
+        { id: 7, name: "Netzach", nameES: "Victoria", gx: 1, gy: 1, color: "#0f0" },     
+        { id: 8, name: "Hod", nameES: "Gloria", gx: -1, gy: 1, color: "#FF8C00" },       
+        { id: 9, name: "Yesod", nameES: "Fundamento", gx: 0, gy: 2, color: "#9400D3" },  
+        { id: 10, name: "Malkuth", nameES: "Reino", gx: 0, gy: 4, color: "#8B4513" }     
+    ];
+
+    const paths = [
+        [1,2], [1,3], [2,3], [2,4], [3,5], [2,6], [3,6],
+        [4,5], [4,6], [5,6], [4,7], [5,8], [6,7], [6,8], [6,9],
+        [7,8], [7,9], [8,9], [9,10]
+    ];
+
+    // CAMBIO: showFlower: false (Desactivado por defecto)
+    let state = {
+        bg: '#000000', sphereColor: '#FFD700', pathColor: '#00BFFF',
+        emanation: 100, sphereSize: 15, pathWidth: 3, glow: 20,
+        showNames: true, showDaat: false, showPillars: false, showFlower: false
+    };
+
+    let w, h, cx, cy, R; 
+    let animationId = null;
+
+    function init() {
+        setupListeners();
+        resizeCanvas();
+    }
+
+    function resizeCanvas() {
+        if (!canvasContainer) return;
+        const cw = canvasContainer.offsetWidth;
+        const ch = canvasContainer.offsetHeight;
+        canvas.width = cw;
+        canvas.height = ch;
+        w = cw; h = ch;
+        cx = w / 2;
+        cy = h / 2; 
+        
+        // CALCULO DEL RADIO MAESTRO (R)
+        R = (h * 0.9) / 8; 
+        
+        requestAnimationFrame(drawScene);
+    }
+    window.addEventListener('resize', () => { setTimeout(resizeCanvas, 50); });
+
+    function drawScene() {
+        // Fondo
+        ctx.fillStyle = state.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        const gridX = 1.5 * R;          
+        const gridY = Math.sqrt(3)/2 * R; 
+
+        // 1. DIBUJAR FLOR DE LA VIDA (FONDO DENSO)
+        if (state.showFlower) {
+            ctx.shadowBlur = 0;
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.19)"; 
+            
+            // Distancias para la flor real
+            const stepY = Math.sqrt(3)/2 * R;
+            const stepX = R; 
+
+            // Rango ampliado
+            const cols = Math.ceil(w / stepX) + 3;
+            const rows = Math.ceil(h / stepY) + 3;
+
+            ctx.beginPath(); 
+
+            for (let r = -rows; r <= rows; r++) {
+                const offsetX = (Math.abs(r) % 2 === 1) ? (stepX / 2) : 0;
+                const cy_grid = cy + (r * stepY);
+
+                for (let q = -cols; q <= cols; q++) {
+                    const cx_grid = cx + (q * stepX) + offsetX;
+                    if (cx_grid > -100 && cx_grid < w + 100 && cy_grid > -100 && cy_grid < h + 100) {
+                        ctx.moveTo(cx_grid + R, cy_grid); 
+                        ctx.arc(cx_grid, cy_grid, R, 0, Math.PI * 2);
+                    }
+                }
+            }
+            ctx.stroke(); 
+        }
+
+        // --- RESTO DEL ÁRBOL ---
+        
+        // Rejilla del Árbol (para las Sephirot)
+        const gridX_tree = 1.5 * R;          
+        const gridY_tree = Math.sqrt(3)/2 * R; 
+
+        // Posiciones reales
+        const coords = {};
+        sephirotDefs.forEach(s => {
+            coords[s.id] = {
+                x: cx + (s.gx * gridX_tree),
+                y: cy + (s.gy * gridY_tree),
+                visible: isSephiraVisible(s.id),
+                def: s
+            };
+        });
+
+        // Configurar Glow
+        ctx.shadowBlur = state.glow;
+        ctx.shadowColor = state.sphereColor;
+
+        // 2. PILARES
+        if (state.showPillars) {
+            ctx.shadowBlur = 0;
+            drawPillar(coords[3].x, "rgba(255,255,255,0.05)"); 
+            drawPillar(coords[2].x, "rgba(255,255,255,0.05)"); 
+            drawPillar(coords[1].x, "rgba(255,255,255,0.05)"); 
+            ctx.shadowBlur = state.glow;
+        }
+
+        // 3. SENDEROS
+        ctx.strokeStyle = state.pathColor;
+        ctx.lineWidth = state.pathWidth;
+        ctx.lineCap = "round";
+        ctx.shadowColor = state.pathColor;
+
+        paths.forEach(p => {
+            const s1 = getCoordById(p[0], coords);
+            const s2 = getCoordById(p[1], coords);
+            
+            if (s1 && s2 && s1.visible && s2.visible) {
+                ctx.beginPath();
+                ctx.moveTo(s1.x, s1.y);
+                ctx.lineTo(s2.x, s2.y);
+                ctx.stroke();
+            }
+        });
+
+        // 4. ESFERAS
+        ctx.shadowColor = state.sphereColor;
+        
+        Object.values(coords).forEach(c => {
+            if (c.def.hidden && !state.showDaat) return; 
+            
+            if (c.visible) {
+                ctx.fillStyle = state.sphereColor;
+                if (c.def.hidden) ctx.globalAlpha = 0.6;
+                
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, state.sphereSize, 0, Math.PI*2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+
+                const grad = ctx.createRadialGradient(c.x, c.y, state.sphereSize*0.2, c.x, c.y, state.sphereSize);
+                grad.addColorStop(0, "rgba(255,255,255,0.9)");
+                grad.addColorStop(1, "rgba(255,255,255,0)");
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                if (state.showNames) {
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = "#fff";
+                    ctx.font = "bold 14px Segoe UI";
+                    ctx.textAlign = "left";
+                    ctx.fillText(c.def.nameES.toUpperCase(), c.x + state.sphereSize + 8, c.y + 4);
+                    ctx.fillStyle = "#888";
+                    ctx.font = "12px Segoe UI";
+                    ctx.fillText(c.def.name, c.x + state.sphereSize + 8, c.y - 10);
+                    ctx.shadowBlur = state.glow;
+                }
+            }
+        });
+    }
+
+    function getCoordById(id, coordsObj) { return coordsObj[id]; }
+
+    function drawPillar(x, color) {
+        ctx.fillStyle = color;
+        ctx.fillRect(x - 20, 0, 40, h);
+    }
+
+    function isSephiraVisible(id) {
+        let order = 0;
+        switch(id) {
+            case 1: order = 10; break;
+            case 2: order = 20; break;
+            case 3: order = 30; break;
+            case 11: order = 35; break; 
+            case 4: order = 40; break;
+            case 5: order = 50; break;
+            case 6: order = 60; break;
+            case 7: order = 70; break;
+            case 8: order = 80; break;
+            case 9: order = 90; break;
+            case 10: order = 100; break;
+        }
+        return state.emanation >= order;
+    }
+
+    function toggleAnimation() {
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+            document.getElementById('playEmanation').innerText = "▶";
+        } else {
+            document.getElementById('playEmanation').innerText = "⏸";
+            if (state.emanation >= 100) {
+                state.emanation = 0;
+                document.getElementById('emanationRange').value = 0;
+            }
+            animateLoop();
+        }
+    }
+
+    let lastTime = 0;
+    function animateLoop(timestamp) {
+        if (!lastTime) lastTime = timestamp;
+        if (timestamp - lastTime > 30) {
+            if (state.emanation < 100) {
+                state.emanation += 0.5;
+                document.getElementById('emanationRange').value = Math.floor(state.emanation);
+                document.getElementById('emanationVal').innerText = Math.floor(state.emanation) + '%';
+                drawScene();
+                lastTime = timestamp;
+                animationId = requestAnimationFrame(animateLoop);
+            } else {
+                toggleAnimation();
+            }
+        } else {
+            animationId = requestAnimationFrame(animateLoop);
+        }
+    }
+
+    function setupListeners() {
+        const bind = (id, prop, type = 'val') => {
+            document.getElementById(id).addEventListener('input', (e) => {
+                let v = e.target.value;
+                if (type === 'int') v = parseInt(v);
+                state[prop] = v;
+                if(id === 'emanationRange') document.getElementById('emanationVal').innerText = v + '%';
+                requestAnimationFrame(drawScene);
+            });
+        };
+
+        bind('bgColor', 'bg');
+        bind('sphereColor', 'sphereColor');
+        bind('pathColor', 'pathColor');
+        bind('emanationRange', 'emanation', 'int');
+        bind('glowRange', 'glow', 'int');
+        bind('sizeRange', 'sphereSize', 'int');
+        bind('widthRange', 'pathWidth', 'int');
+
+        document.getElementById('checkNames').addEventListener('change', (e) => { state.showNames = e.target.checked; requestAnimationFrame(drawScene); });
+        document.getElementById('checkDaat').addEventListener('change', (e) => { state.showDaat = e.target.checked; requestAnimationFrame(drawScene); });
+        document.getElementById('checkPillars').addEventListener('change', (e) => { state.showPillars = e.target.checked; requestAnimationFrame(drawScene); });
+        document.getElementById('checkFlower').addEventListener('change', (e) => { state.showFlower = e.target.checked; requestAnimationFrame(drawScene); });
+
+        document.getElementById('playEmanation').addEventListener('click', toggleAnimation);
+        document.getElementById('btnPng').addEventListener('click', () => download('png'));
+        document.getElementById('btnJpg').addEventListener('click', () => download('jpeg'));
+    }
+
+    function download(ext) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'destination-over';
+        ctx.fillStyle = state.bg;
+        ctx.fillRect(0, 0, w, h);
+        const link = document.createElement('a');
+        link.download = `arbol_vida.${ext}`;
+        link.href = canvas.toDataURL('image/' + ext, 0.9);
+        link.click();
+        ctx.restore();
+        drawScene();
+    }
+
+    init();
+</script>
+</body>
+</html>
