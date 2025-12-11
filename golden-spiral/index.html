@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>La Espiral Áurea (Fibonacci) - Geometría Sagrada TOP</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+      crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Explora el patrón de crecimiento de la naturaleza. Generador interactivo de espirales de Fibonacci y la proporción áurea (Phyllotaxis).">
+    
+    <style>
+        /* ESTILO "CRYSTAL FORGE PRO" - CLEAN & SCROLLABLE */
+        html, body { 
+            margin: 0; padding: 0; background-color: #000; font-family: 'Segoe UI', sans-serif; color: #ddd; 
+            overflow-x: hidden; overscroll-behavior: none;
+        }
+        
+        #app-wrapper { 
+            display: flex; width: 100%; height: 100vh; overflow: hidden; position: relative;
+        }
+        
+        /* CANVAS AREA */
+        #canvas-container {
+            flex: 3; position: relative;
+            /* Fondo degradado sutil para dar profundidad */
+            background: radial-gradient(circle at center, #222 0%, #000 70%);
+            cursor: grab; overflow: hidden; touch-action: none;
+        }
+        #canvas-container:active { cursor: grabbing; }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* CONTROLES */
+        #controls-container {
+            flex: 2; min-width: 320px; background-color: #050505; padding: 25px;
+            overflow-y: auto; box-shadow: -5px 0 30px rgba(0,0,0,0.8); border-left: 1px solid #222; z-index: 10;
+        }
+
+        /* Color principal: Dorado/Naranja para representar la vida y el sol */
+        h2 { color: #FFD700; margin: 0 0 15px 0; text-align: center; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
+        
+        /* BOTONES DE EXPORTACIÓN */
+        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; }
+        .export-btn {
+            flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+            transition: transform 0.1s, filter 0.2s; font-size: 0.9em;
+        }
+        .export-btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
+        #btnPng { background-color: #FFD700; color: #000; } 
+        #btnJpg { background-color: #fff; color: #000; } 
+
+        /* GRUPOS DE CONTROL */
+        .control-group { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .control-row { display: flex; align-items: center; margin-bottom: 12px; font-size: 0.9em; justify-content: space-between; }
+        .control-label { color: #ccc; font-weight: 500; flex: 1; }
+        
+        input[type=range] { flex: 2; cursor: pointer; accent-color: #FFD700; }
+        input[type=color] { border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; padding: 0; overflow: hidden; }
+        .value-display { flex: 0.5; text-align: right; font-family: monospace; color: #FFD700; font-size: 0.9em; }
+
+        .btn-main {
+            width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 10px;
+            background: linear-gradient(45deg, #FFD700, #FF8C00); color: #000; font-size: 1em;
+            transition: all 0.3s; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+        }
+        .btn-main:hover { filter: brightness(1.1); box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
+
+        /* SECCIÓN DE CONTENIDO (TEXTO) */
+        .content-section { max-width: 900px; margin: 0 auto; padding: 60px 20px; background-color: #000; position: relative; z-index: 20; }
+        .ad-placeholder {
+            width: 100%; height: 120px; background: #0f0f0f; margin: 40px 0;
+            border: 1px dashed #444; display: flex; align-items: center; justify-content: center; color: #666; font-size: 0.9em; font-style: italic;
+        }
+        article h2 { color: #FFD700; border-left: 4px solid #FFD700; padding-left: 15px; margin-top: 60px; font-size: 2em; letter-spacing: 1px;}
+        article h3 { color: #fff; margin-top: 40px; font-size: 1.5em; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        article p { margin-bottom: 20px; font-size: 1.1em; color: #ccc; line-height: 1.8; text-align: justify; }
+        article ul { list-style: none; padding: 0; }
+        article li { margin-bottom: 15px; padding-left: 20px; border-left: 2px solid #FFD700; color: #bbb; }
+        article strong { color: #FFD700; }
+
+        footer { background-color: #050505; padding: 50px 20px; text-align: center; border-top: 1px solid #222; font-size: 0.9em; color: #666; position: relative; z-index: 20;}
+        footer a { color: #888; text-decoration: none; margin: 0 10px; transition: color 0.3s; }
+        footer a:hover { color: #FFD700; }
+
+        /* RESPONSIVE */
+        @media (max-width: 800px) and (orientation: portrait) {
+            #app-wrapper { display: block; height: auto; }
+            #canvas-container { height: 55vh; border-bottom: 2px solid #FFD700; }
+            #controls-container { height: auto; }
+        }
+        @media (max-width: 900px) and (orientation: landscape) {
+            #controls-container { padding: 15px; }
+            h2 { font-size: 1.2em; }
+            .control-group { padding: 10px; margin-bottom: 10px; }
+            .btn-group { margin-bottom: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-wrapper">
+    <div id="canvas-container">
+        <canvas id="fibonacciCanvas"></canvas>
+    </div>
+
+    <div id="controls-container">
+        <h2>La Espiral Áurea</h2>
+        
+        <div class="btn-group">
+            <button id="btnPng" class="export-btn">💾 Guardar PNG</button>
+            <button id="btnJpg" class="export-btn">📸 Guardar JPG</button>
+        </div>
+
+        <button id="btnGolden" class="btn-main">🌻 Restaurar Ángulo Perfecto (137.5°)</button>
+
+        <div class="control-group">
+            <h3 style="margin:0 0 15px 0; color:#fff; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Parámetros de Crecimiento</h3>
+            
+            <div class="control-row">
+                <span class="control-label" title="El ángulo entre cada nueva semilla. ¡La clave del patrón!">📐 Ángulo de Divergencia</span>
+                <input type="range" id="angle" min="130" max="145" step="0.05" value="137.5">
+                <span id="angleVal" class="value-display">137.50°</span>
+            </div>
+            <p style="font-size:0.75em; color:#888; margin-top:-5px; margin-bottom:15px;">Mueve muy despacio. El orden perfecto está en ~137.5°</p>
+
+            <div class="control-row">
+                <span class="control-label">🌱 Cantidad de Semillas</span>
+                <input type="range" id="count" min="100" max="2000" step="10" value="800">
+                <span id="countVal" class="value-display">800</span>
+            </div>
+            
+            <div class="control-row">
+                <span class="control-label">✨ Separación (Zoom Base)</span>
+                <input type="range" id="spread" min="2" max="20" step="0.5" value="6">
+                <span id="spreadVal" class="value-display">6.0</span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3 style="margin:0 0 15px 0; color:#fff; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Estética</h3>
+             <div class="control-row">
+                <span class="control-label">Tamaño Semilla</span>
+                <input type="range" id="dotSize" min="1" max="10" step="0.5" value="3">
+                <span id="dotSizeVal" class="value-display">3.0</span>
+            </div>
+            <div class="control-row">
+                <span class="control-label">Color Principal</span>
+                <input type="color" id="colorMain" value="#FFD700"> </div>
+            <div class="control-row">
+                <span class="control-label">Color Secundario (Centro)</span>
+                <input type="color" id="colorCenter" value="#FF4500"> </div>
+        </div>
+
+        <div style="text-align:center; margin-top:20px;">
+            <a href="../index.html" style="color:#FFD700; text-decoration:none; font-weight:bold; font-size:0.9em;">← Volver al Hub Central</a>
+        </div>
+    </div>
+</div>
+
+<section class="content-section">
+    <div class="ad-placeholder">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_golden_spiral -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="9544025518"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </div>
+
+    <article>
+        <h2>La Huella Digital de la Naturaleza</h2>
+        <p>Bienvenido al patrón de crecimiento más eficiente del universo. Lo que estás viendo no es un simple dibujo espiral; es una simulación matemática del proceso conocido como <strong>Phyllotaxis</strong> (del griego "disposición de las hojas").</p>
+        <p>Es el mismo algoritmo que utilizan los girasoles para ordenar sus semillas, las piñas para formar sus escamas, los cactus, las suculentas e incluso galaxias enteras. La naturaleza no elige este patrón por estética, sino por pura <strong>eficiencia de supervivencia</strong>.</p>
+
+        <h3>El Secreto del Ángulo Áureo (137.5°)</h3>
+        <p>La magia de esta herramienta reside en el primer deslizador: el <strong>Ángulo de Divergencia</strong>. Imagina que eres una planta y tienes que hacer brotar una nueva hoja o semilla. ¿Dónde la pones para que no haga sombra a las anteriores y reciba la máxima luz posible?</p>
+        <p>La respuesta matemática perfecta es girar exactamente <strong>137.50776... grados</strong> (el Ángulo Áureo) antes de colocar la siguiente. Este número se deriva de la famosa proporción áurea ($\phi$, Phi = 1.618...).</p>
+        <ul>
+            <li><strong>Pruébalo tú mismo:</strong> Usa el botón "Restaurar Ángulo Perfecto" para ver el patrón del girasol. Luego, mueve el deslizador del ángulo <em>muy lentamente</em>.</li>
+            <li><strong>El Caos y el Orden:</strong> Verás que si te desvías solo 0.1 o 0.2 grados de 137.5°, el patrón perfecto se rompe en líneas rectas o espirales confusas. Esto demuestra cuán preciso es el diseño de la naturaleza. Solo hay una manera de ser óptimo; todo lo demás es menos eficiente.</li>
+        </ul>
+
+        <h3>Relación con la Secuencia de Fibonacci</h3>
+        <p>Si observas el patrón perfecto (en 137.5°), verás espirales que giran en sentido horario y otras en sentido antihorario. ¡Cuéntalas!.</p>
+        <p>Te sorprenderá descubrir que el número de espirales en una dirección y en la otra son siempre <strong>dos números consecutivos de la Secuencia de Fibonacci</strong> (ej: 13 y 21, o 21 y 34, o 34 y 55, dependiendo del tamaño de la flor).</p>
+
+        <h3>¿Para qué usar esta herramienta?</h3>
+        <p>Este laboratorio visual es una herramienta de contemplación poderosa:</p>
+        <ul>
+            <li><strong>Conexión con la Naturaleza:</strong> Entender que las matemáticas no son algo frío y ajeno, sino el lenguaje con el que está escrita la vida biológica.</li>
+            <li><strong>Meditación Visual:</strong> Observar el centro brillante y cómo el orden emerge del aparente caos puede inducir estados de calma y asombro.</li>
+            <li><strong>Inspiración de Diseño:</strong> Artistas y arquitectos han usado este patrón durante milenios para crear composiciones armónicas y agradables al ojo humano.</li>
+        </ul>
+    </article>
+
+    <div class="ad-placeholder">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_golden_spiral -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="9544025518"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </div>
+</section>
+
+<footer>
+    <div style="margin-bottom: 30px;">
+        <p style="margin-bottom: 10px; color: #aaa;">¿Te ha fascinado la geometría?</p>
+        <a href="https://www.paypal.com/paypalme/pbazan" target="_blank" style="display: inline-block; background-color: #0070BA; color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(0,112,186, 0.3);">☕ Invítame a un café</a>
+    </div>
+    <p>&copy; 2025 Geometría Sagrada Top.</p>
+    <br>
+    <a href="../legal.html#privacidad">Política de Privacidad</a> | <a href="../legal.html#terminos">Términos</a> | <a href="mailto:geometriasagradatop@gmail.com">Contacto</a>
+</footer>
+
+<script>
+    const canvas = document.getElementById('fibonacciCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // --- ESTADO DE LA APLICACIÓN ---
+    const state = {
+        angle: 137.5,      // El ángulo mágico
+        count: 800,        // Número de semillas
+        spread: 6.0,       // Separación base (zoom)
+        dotSize: 3.0,      // Tamaño de la semilla
+        colorMain: '#FFD700',
+        colorCenter: '#FF4500',
+        currentZoom: 1.0   // Factor de zoom dinámico (rueda/pinza)
+    };
+
+    // Variables para interacción táctil
+    let initialPinchDist = null;
+    let initialZoom = 1.0;
+
+    function init() {
+        resize();
+        window.addEventListener('resize', resize);
+        setupControls();
+        addInteractionListeners();
+        draw();
+    }
+
+    function resize() {
+        // Ajustar canvas al tamaño real del contenedor
+        const parent = canvas.parentElement;
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight;
+        draw();
+    }
+
+    function draw() {
+        // 1. Limpiar pantalla
+        // Usamos un relleno negro semi-transparente muy sutil si quisiéramos estela, 
+        // pero para este patrón, un borrado limpio se ve mejor y más nítido.
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Centro de la pantalla
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+
+        // Configuración de dibujo "orgánico"
+        // 'lighter' hace que los colores se sumen donde se superponen, creando un centro brillante
+        ctx.globalCompositeOperation = 'lighter'; 
+
+        // Convertir ángulo a radianes
+        // El ángulo áureo exacto es un número irracional. Usamos una aproximación alta.
+        const goldenAngleRad = state.angle * (Math.PI / 180); 
+
+        // Bucle principal para dibujar cada semilla
+        for (let n = 0; n < state.count; n++) {
+            // --- FÓRMULA MATEMÁTICA DE PHYLLOTAXIS ---
+            // Ángulo: El número de semilla * el ángulo de divergencia
+            const theta = n * goldenAngleRad;
+            
+            // Radio: La raíz cuadrada del número de semilla. 
+            // Esto es clave para que el área se mantenga constante y no se amontonen al final.
+            // Multiplicamos por 'spread' y 'currentZoom' para el tamaño final.
+            const radius = state.spread * state.currentZoom * Math.sqrt(n);
+
+            // Convertir Polar (ángulo, radio) a Cartesiano (x, y)
+            const x = centerX + radius * Math.cos(theta);
+            const y = centerY + radius * Math.sin(theta);
+
+            // --- DIBUJAR LA SEMILLA ---
+            // Hacemos que las semillas del centro sean un poco más pequeñas
+            // y las de fuera más grandes, para un efecto de crecimiento.
+            const scaleFactor = 0.5 + (n / state.count) * 0.5; // De 0.5 a 1.0
+            const currentDotSize = state.dotSize * scaleFactor * (state.currentZoom * 0.8 + 0.2);
+
+            // Crear un degradado radial para cada semilla (efecto brillante)
+            // El color varía desde el centro (rojizo) hacia afuera (dorado)
+            const colorRatio = n / state.count;
+            const r1 = parseInt(state.colorCenter.slice(1,3), 16);
+            const g1 = parseInt(state.colorCenter.slice(3,5), 16);
+            const b1 = parseInt(state.colorCenter.slice(5,7), 16);
+            const r2 = parseInt(state.colorMain.slice(1,3), 16);
+            const g2 = parseInt(state.colorMain.slice(3,5), 16);
+            const b2 = parseInt(state.colorMain.slice(5,7), 16);
+            
+            const r = Math.round(r1 + (r2 - r1) * colorRatio);
+            const g = Math.round(g1 + (g2 - g1) * colorRatio);
+            const b = Math.round(b1 + (b2 - b1) * colorRatio);
+            const finalColor = `rgb(${r},${g},${b})`;
+
+            const grad = ctx.createRadialGradient(x, y, 0, x, y, currentDotSize);
+            grad.addColorStop(0, finalColor); // Centro brillante
+            grad.addColorStop(1, `rgba(${r},${g},${b},0)`); // Borde transparente
+
+            ctx.beginPath();
+            ctx.arc(x, y, currentDotSize, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+        }
+        // Restaurar modo de mezcla normal
+        ctx.globalCompositeOperation = 'source-over';
+    }
+
+    // --- INTERACCIÓN (ZOOM) ---
+    function addInteractionListeners() {
+        // PC: Rueda del ratón
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomSpeed = 0.05;
+            if (e.deltaY < 0) {
+                state.currentZoom *= (1 + zoomSpeed); // Zoom In
+            } else {
+                state.currentZoom *= (1 - zoomSpeed); // Zoom Out
+            }
+            // Límites de zoom
+            state.currentZoom = Math.min(Math.max(0.2, state.currentZoom), 5);
+            draw();
+        }, { passive: false });
+
+        // MÓVIL: Pinch (Pinza con dos dedos)
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                initialPinchDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                initialZoom = state.currentZoom;
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && initialPinchDist > 0) {
+                e.preventDefault();
+                const currentDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                const scale = currentDist / initialPinchDist;
+                state.currentZoom = initialZoom * scale;
+                // Límites de zoom
+                state.currentZoom = Math.min(Math.max(0.2, state.currentZoom), 5);
+                draw();
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) {
+                initialPinchDist = null;
+            }
+        });
+    }
+
+    function setupControls() {
+        // Listeners para los sliders y colores
+        const angleInput = document.getElementById('angle');
+        const angleVal = document.getElementById('angleVal');
+        angleInput.oninput = (e) => {
+            state.angle = parseFloat(e.target.value);
+            angleVal.innerText = state.angle.toFixed(2) + '°';
+            draw();
+        };
+
+        const countInput = document.getElementById('count');
+        const countVal = document.getElementById('countVal');
+        countInput.oninput = (e) => {
+            state.count = parseInt(e.target.value);
+            countVal.innerText = state.count;
+            draw();
+        };
+
+        const spreadInput = document.getElementById('spread');
+        const spreadVal = document.getElementById('spreadVal');
+        spreadInput.oninput = (e) => {
+            state.spread = parseFloat(e.target.value);
+            spreadVal.innerText = state.spread.toFixed(1);
+            draw();
+        };
+        
+        const dotSizeInput = document.getElementById('dotSize');
+        const dotSizeVal = document.getElementById('dotSizeVal');
+        dotSizeInput.oninput = (e) => {
+            state.dotSize = parseFloat(e.target.value);
+            dotSizeVal.innerText = state.dotSize.toFixed(1);
+            draw();
+        };
+
+        document.getElementById('colorMain').oninput = (e) => { state.colorMain = e.target.value; draw(); };
+        document.getElementById('colorCenter').oninput = (e) => { state.colorCenter = e.target.value; draw(); };
+
+        // Botón "Golden" (Restaurar)
+        document.getElementById('btnGolden').onclick = () => {
+            state.angle = 137.5;
+            angleInput.value = 137.5;
+            angleVal.innerText = "137.50°";
+            draw();
+        };
+
+        // Botones de Exportación
+        document.getElementById('btnPng').onclick = () => saveImage('png');
+        document.getElementById('btnJpg').onclick = () => saveImage('jpeg');
+    }
+
+    function saveImage(format) {
+        draw(); // Asegurar que está actualizado
+        if(format === 'jpeg') {
+            // Crear canvas temporal para fondo negro (JPG no tiene transparencia)
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const tCtx = tempCanvas.getContext('2d');
+            tCtx.fillStyle = '#000000';
+            tCtx.fillRect(0,0, tempCanvas.width, tempCanvas.height);
+            tCtx.drawImage(canvas, 0, 0);
+            
+            const link = document.createElement('a');
+            link.download = `espiral_aurea.${format}`;
+            link.href = tempCanvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+        } else {
+            const link = document.createElement('a');
+            link.download = `espiral_aurea.${format}`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    }
+
+    // Arrancar la aplicación
+    init();
+
+</script>
+</body>
+</html>

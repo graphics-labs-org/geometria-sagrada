@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Explorador Fractal: El Infinito - Geometría Sagrada TOP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Explorador interactivo del Conjunto de Mandelbrot. Visualiza la geometría fractal, la auto-similitud y el concepto de infinito matemático.">
+    
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+      crossorigin="anonymous"></script>
+
+    <style>
+        /* ESTILO "CRYSTAL FORGE PRO" - THEME: DEEP COSMOS (PURPLE/NEON) */
+        html, body { 
+            margin: 0; padding: 0; background-color: #050010; font-family: 'Segoe UI', sans-serif; color: #ddd; 
+            overflow-x: hidden; overscroll-behavior: none;
+        }
+        
+        #app-wrapper { 
+            display: flex; width: 100%; height: 100vh; overflow: hidden; position: relative;
+        }
+        
+        #canvas-container {
+            flex: 3; position: relative;
+            background: #000;
+            cursor: move; overflow: hidden; touch-action: none;
+        }
+        canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+
+        #controls-container {
+            flex: 2; min-width: 320px; background-color: #0a0515; padding: 25px;
+            overflow-y: auto; box-shadow: -5px 0 30px rgba(0,0,0,0.8); border-left: 1px solid #222; z-index: 10;
+        }
+
+        /* Títulos en Magenta Eléctrico */
+        h2 { color: #d500f9; margin: 0 0 15px 0; text-align: center; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 15px rgba(213, 0, 249, 0.4); }
+        
+        /* BOTONES */
+        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; }
+        .export-btn {
+            flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+            transition: transform 0.1s, filter 0.2s; font-size: 0.9em;
+        }
+        .export-btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
+        #btnPng { background-color: #d500f9; color: #fff; } 
+        #btnJpg { background-color: #fff; color: #000; } 
+
+        .control-group { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .control-row { display: flex; align-items: center; margin-bottom: 12px; font-size: 0.9em; justify-content: space-between; }
+        .control-label { color: #ccc; font-weight: 500; flex: 1; }
+        
+        input[type=range] { flex: 2; cursor: pointer; accent-color: #d500f9; }
+        .value-display { flex: 0.5; text-align: right; font-family: monospace; color: #d500f9; font-size: 0.9em; }
+
+        /* Botón Reset */
+        .btn-main {
+            width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 10px;
+            background: linear-gradient(45deg, #4a148c, #aa00ff); color: #fff; font-size: 1em;
+            transition: all 0.3s; box-shadow: 0 0 10px rgba(170, 0, 255, 0.2);
+        }
+        .btn-main:hover { filter: brightness(1.2); }
+
+        /* Selectores de Color (Presets) */
+        .preset-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+        .btn-preset { 
+            background: #222; color: #aaa; border: 1px solid #444; padding: 8px; border-radius: 4px; 
+            cursor: pointer; font-size: 0.75em; text-align: center;
+        }
+        .btn-preset:hover { border-color: #d500f9; color: #fff; }
+        .btn-preset.active { background: #d500f9; color: #fff; border-color: #fff; }
+
+        /* SECCIÓN INFORMATIVA */
+        .content-section { max-width: 900px; margin: 0 auto; padding: 60px 20px; background-color: #050010; position: relative; z-index: 20; }
+        .ad-placeholder {
+            width: 100%; height: 120px; background: #0f0f0f; margin: 40px 0;
+            border: 1px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.9em; font-style: italic;
+        }
+        article h2 { color: #d500f9; border-left: 4px solid #d500f9; padding-left: 15px; margin-top: 60px; font-size: 2em; letter-spacing: 1px;}
+        article h3 { color: #fff; margin-top: 40px; font-size: 1.5em; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        article p { margin-bottom: 20px; font-size: 1.1em; color: #ccc; line-height: 1.8; text-align: justify; }
+        article ul { list-style: none; padding: 0; }
+        article li { margin-bottom: 15px; padding-left: 20px; border-left: 2px solid #d500f9; color: #bbb; }
+        article strong { color: #d500f9; }
+
+        footer { background-color: #000; padding: 50px 20px; text-align: center; border-top: 1px solid #222; font-size: 0.9em; color: #666; position: relative; z-index: 20;}
+        footer a { color: #888; text-decoration: none; margin: 0 10px; transition: color 0.3s; }
+        footer a:hover { color: #d500f9; }
+
+        @media (max-width: 800px) and (orientation: portrait) {
+            #app-wrapper { display: block; height: auto; }
+            #canvas-container { height: 50vh; border-bottom: 2px solid #d500f9; }
+            #controls-container { height: auto; }
+        }
+        @media (max-width: 900px) and (orientation: landscape) {
+            #controls-container { padding: 15px; }
+            h2 { font-size: 1.2em; }
+            .control-group { padding: 10px; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-wrapper">
+    <div id="canvas-container">
+        <canvas id="fractalCanvas"></canvas>
+    </div>
+
+    <div id="controls-container">
+        <h2>Fractal Mandelbrot</h2>
+        
+        <div class="btn-group">
+            <button id="btnPng" class="export-btn">💾 Guardar PNG</button>
+            <button id="btnJpg" class="export-btn">📸 Guardar JPG</button>
+        </div>
+
+        <button id="btnReset" class="btn-main">🌌 Reiniciar Vista</button>
+
+        <div class="control-group">
+            <h3 style="margin:0 0 15px 0; color:#fff; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Navegación</h3>
+            
+            <p style="font-size:0.8em; color:#aaa; margin-top:-5px; margin-bottom:15px;">
+                🖱️ <strong>PC:</strong> Rueda para Zoom, Arrastra para mover.<br>
+                👆 <strong>Móvil:</strong> Pinza para Zoom, Dedo para mover.
+            </p>
+
+            <div class="control-row">
+                <span class="control-label" title="Más iteraciones = más detalle en los bordes">🔢 Detalle (Iteraciones)</span>
+                <input type="range" id="iterations" min="50" max="500" step="10" value="100">
+                <span id="iterVal" class="value-display">100</span>
+            </div>
+            
+            <div class="control-row">
+                <span class="control-label" title="Baja resolución para moverte rápido, alta para la foto">⚡ Resolución (Calidad)</span>
+                <input type="range" id="resolution" min="0.2" max="1.5" step="0.1" value="0.5">
+                <span id="resVal" class="value-display">50%</span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3 style="margin:0 0 15px 0; color:#fff; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Paleta de Energía</h3>
+            <div class="preset-grid">
+                <button class="btn-preset active" onclick="setPalette('cosmos')">Cosmos</button>
+                <button class="btn-preset" onclick="setPalette('gold')">Oro</button>
+                <button class="btn-preset" onclick="setPalette('fire')">Fuego</button>
+                <button class="btn-preset" onclick="setPalette('matrix')">Matrix</button>
+                <button class="btn-preset" onclick="setPalette('ice')">Hielo</button>
+                <button class="btn-preset" onclick="setPalette('rainbow')">Chakra</button>
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top:20px;">
+            <a href="../index.html" style="color:#d500f9; text-decoration:none; font-weight:bold; font-size:0.9em;">← Volver al Hub Central</a>
+        </div>
+    </div>
+</div>
+
+<section class="content-section">
+    <div class="ad-placeholder">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_fractal_explorer -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="9330889634"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </div>
+
+    <article>
+        <h2>Fractales: La Geometría del Infinito</h2>
+        <p>Has entrado en el dominio de lo infinito. Lo que estás viendo es el <strong>Conjunto de Mandelbrot</strong>, la estructura matemática más compleja y famosa que existe. No es un dibujo hecho por un artista, es el resultado visual de una ecuación muy simple ($z = z^2 + c$) repetida eternamente.</p>
+
+        <h3>El Principio Hermético: "Como es Arriba, es Abajo"</h3>
+        <p>Los fractales son la demostración científica de la antigua ley espiritual de la correspondencia. Esta ley dice que lo macrocosmos (el universo) se refleja en el microcosmos (el átomo).</p>
+        <p>En este laboratorio, puedes experimentar la <strong>Auto-similitud</strong>. Si haces zoom en el borde del conjunto, verás que las mismas formas se repiten una y otra vez a diferentes escalas. Una pequeña parte contiene la información del todo. Así como una célula contiene el ADN de todo el cuerpo, un fragmento del fractal contiene la esencia de la estructura completa.</p>
+
+        <h3>¿Dónde vemos esto en la naturaleza?</h3>
+        <p>La naturaleza no usa líneas rectas ni círculos perfectos; usa fractales. Es la forma más eficiente de ocupar el espacio y maximizar la superficie:</p>
+        <ul>
+            <li><strong>Tus Pulmones:</strong> Se ramifican una y otra vez para absorber más oxígeno.</li>
+            <li><strong>Los Árboles:</strong> Una rama se parece al árbol entero, y una ramita se parece a la rama.</li>
+            <li><strong>Las Costas y Montañas:</strong> Vistas desde un satélite o desde el suelo, la rugosidad sigue el mismo patrón.</li>
+            <li><strong>El Sistema Circulatorio y las Galaxias.</strong></li>
+        </ul>
+
+        <h3>Cómo usar este Explorador</h3>
+        <p>Esta es una herramienta para contemplar la inmensidad:</p>
+        <ol>
+            <li><strong>Navegación:</strong> Usa el ratón o el dedo para moverte. Haz zoom en los bordes (la frontera entre lo negro y lo coloreado). Ahí es donde reside el "caos ordenado".</li>
+            <li><strong>Profundidad:</strong> Si haces mucho zoom, la imagen puede volverse borrosa o negra. Sube el control de <strong>"Detalle (Iteraciones)"</strong> para que el ordenador calcule con más precisión las profundidades.</li>
+            <li><strong>Resolución:</strong> Calcular fractales requiere mucha potencia. Si tu móvil va lento, baja la "Resolución" al 20% para moverte, y súbela al 100% o más cuando quieras ver la imagen nítida o guardarla.</li>
+        </ol>
+        <p>Piérdete en el infinito. Recuerda que no importa cuánto te acerques, siempre habrá algo nuevo por descubrir. Es una metáfora perfecta de la consciencia humana.</p>
+    </article>
+
+    <div class="ad-placeholder">
+       <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_fractal_explorer -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="9330889634"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </div>
+</section>
+
+<footer>
+    <div style="margin-bottom: 30px;">
+        <p style="margin-bottom: 10px; color: #aaa;">¿Te ha fascinado la geometría?</p>
+        <a href="https://www.paypal.com/paypalme/pbazan" target="_blank" style="display: inline-block; background-color: #0070BA; color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(0,112,186, 0.3);">☕ Invítame a un café</a>
+    </div>
+    <p>&copy; 2025 Geometría Sagrada Top.</p>
+    <br>
+    <a href="../legal.html#privacidad">Política de Privacidad</a> | <a href="../legal.html#terminos">Términos</a> | <a href="mailto:geometriasagradatop@gmail.com">Contacto</a>
+</footer>
+
+<script>
+    const canvas = document.getElementById('fractalCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // ESTADO
+    const state = {
+        zoom: 200,          
+        offsetX: -0.5,      
+        offsetY: 0,         
+        maxIter: 100,       
+        resolution: 0.5,    
+        palette: 'cosmos'   
+    };
+
+    let width, height;
+    let paletteColors = [];
+
+    // VARIABLES INTERACCIÓN
+    let isDragging = false;
+    let lastX = 0;
+    let lastY = 0;
+    let initialPinchDist = null;
+    let initialZoom = 0;
+
+    function init() {
+        setPalette('cosmos'); 
+        resize();
+        window.addEventListener('resize', resize);
+        setupControls();
+        addInteractionListeners();
+        draw();
+    }
+
+    function resize() {
+        const parent = canvas.parentElement;
+        // --- CORRECCIÓN CRÍTICA: Math.floor() ---
+        // Forzamos números enteros para evitar fallos en el array de píxeles
+        canvas.width = Math.floor(parent.clientWidth * state.resolution);
+        canvas.height = Math.floor(parent.clientHeight * state.resolution);
+        
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        
+        width = canvas.width;
+        height = canvas.height;
+        draw();
+    }
+
+    // --- MOTOR FRACTAL (OPTIMIZADO) ---
+    function draw() {
+        if (width === 0 || height === 0) return; // Evitar error si no hay tamaño
+
+        const imgData = ctx.createImageData(width, height);
+        const data = imgData.data;
+
+        // Pre-cálculo de factores para velocidad
+        const panX = state.offsetX - (width / state.zoom) / 2;
+        const panY = state.offsetY - (height / state.zoom) / 2;
+
+        // Bucle Y externo / X interno es más rápido para la memoria del navegador
+        for (let y = 0; y < height; y++) {
+            // Mover el cálculo de cIm aquí fuera del bucle X optimiza
+            const cIm = y / state.zoom + panY;
+
+            for (let x = 0; x < width; x++) {
+                
+                const cRe = x / state.zoom + panX;
+
+                let zRe = 0;
+                let zIm = 0;
+                let n = 0;
+
+                // Núcleo Mandelbrot
+                while (n < state.maxIter && (zRe * zRe + zIm * zIm) < 4) {
+                    let zReNew = zRe * zRe - zIm * zIm + cRe;
+                    zIm = 2 * zRe * zIm + cIm;
+                    zRe = zReNew;
+                    n++;
+                }
+
+                // Índice del píxel (R, G, B, A son 4 posiciones)
+                const pixIndex = (x + y * width) * 4;
+                
+                if (n === state.maxIter) {
+                    data[pixIndex] = 0;     // R
+                    data[pixIndex + 1] = 0; // G
+                    data[pixIndex + 2] = 0; // B
+                    data[pixIndex + 3] = 255; // Alpha
+                } else {
+                    const color = paletteColors[n % 256];
+                    data[pixIndex] = color.r;
+                    data[pixIndex + 1] = color.g;
+                    data[pixIndex + 2] = color.b;
+                    data[pixIndex + 3] = 255;
+                }
+            }
+        }
+        
+        ctx.putImageData(imgData, 0, 0);
+    }
+
+    // --- GENERADOR DE PALETAS ---
+    function setPalette(name) {
+        state.palette = name;
+        paletteColors = [];
+        
+        document.querySelectorAll('.btn-preset').forEach(b => b.classList.remove('active'));
+        const buttons = document.querySelectorAll('.btn-preset');
+        // Mapeo manual simple por orden de botones
+        if(name === 'cosmos') buttons[0]?.classList.add('active');
+        if(name === 'gold') buttons[1]?.classList.add('active');
+        if(name === 'fire') buttons[2]?.classList.add('active');
+        if(name === 'matrix') buttons[3]?.classList.add('active');
+        if(name === 'ice') buttons[4]?.classList.add('active');
+        if(name === 'rainbow') buttons[5]?.classList.add('active');
+
+        for (let i = 0; i < 256; i++) {
+            let r, g, b;
+            const t = i / 256;
+            
+            if (name === 'cosmos') {
+                r = Math.sin(t * Math.PI * 2) * 127 + 128;
+                g = Math.sin(t * Math.PI * 2 + 2) * 50;
+                b = Math.cos(t * Math.PI * 2 + 2) * 127 + 128;
+            } else if (name === 'gold') {
+                r = t * 255; g = t * 215; b = t * 50;
+            } else if (name === 'fire') {
+                r = i * 4; g = i * 2; b = i * 0.5;
+            } else if (name === 'matrix') {
+                r = 0; g = (i * 5) % 255; b = 0;
+            } else if (name === 'ice') {
+                r = t * 50; g = t * 150; b = t * 255;
+            } else {
+                r = Math.sin(0.1 * i + 0) * 127 + 128;
+                g = Math.sin(0.1 * i + 2) * 127 + 128;
+                b = Math.sin(0.1 * i + 4) * 127 + 128;
+            }
+            paletteColors.push({ r, g, b });
+        }
+        if(width) draw(); // Redibujar si ya está iniciado
+    }
+
+    // --- INTERACCIÓN ---
+    function addInteractionListeners() {
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            lastX = e.clientX;
+            lastY = e.clientY;
+        });
+        window.addEventListener('mouseup', () => isDragging = false);
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const dx = e.clientX - lastX;
+            const dy = e.clientY - lastY;
+            lastX = e.clientX;
+            lastY = e.clientY;
+
+            // Invertimos el movimiento para que sea "arrastrar mapa"
+            state.offsetX -= dx / state.zoom / (canvas.clientWidth / width); 
+            state.offsetY -= dy / state.zoom / (canvas.clientHeight / height);
+            
+            requestAnimationFrame(draw);
+        });
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomFactor = 1.1;
+            if (e.deltaY < 0) state.zoom *= zoomFactor;
+            else state.zoom /= zoomFactor;
+            draw();
+        }, { passive: false });
+
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                lastX = e.touches[0].clientX;
+                lastY = e.touches[0].clientY;
+            } else if (e.touches.length === 2) {
+                isDragging = false;
+                initialPinchDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                initialZoom = state.zoom;
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (e.touches.length === 1 && isDragging) {
+                const dx = e.touches[0].clientX - lastX;
+                const dy = e.touches[0].clientY - lastY;
+                lastX = e.touches[0].clientX;
+                lastY = e.touches[0].clientY;
+
+                state.offsetX -= dx / state.zoom / (canvas.clientWidth / width);
+                state.offsetY -= dy / state.zoom / (canvas.clientHeight / height);
+                requestAnimationFrame(draw);
+
+            } else if (e.touches.length === 2 && initialPinchDist > 0) {
+                const dist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                const scale = dist / initialPinchDist;
+                state.zoom = initialZoom * scale;
+                requestAnimationFrame(draw);
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            isDragging = false;
+            initialPinchDist = null;
+        });
+    }
+
+    function setupControls() {
+        const iterInput = document.getElementById('iterations');
+        const iterVal = document.getElementById('iterVal');
+        iterInput.oninput = (e) => {
+            state.maxIter = parseInt(e.target.value);
+            iterVal.innerText = state.maxIter;
+            draw();
+        };
+
+        const resInput = document.getElementById('resolution');
+        const resVal = document.getElementById('resVal');
+        resInput.oninput = (e) => {
+            state.resolution = parseFloat(e.target.value);
+            resVal.innerText = Math.round(state.resolution * 100) + '%';
+            resize(); 
+        };
+
+        document.getElementById('btnReset').onclick = () => {
+            state.zoom = 200;
+            state.offsetX = -0.5;
+            state.offsetY = 0;
+            draw();
+        };
+
+        document.getElementById('btnPng').onclick = () => saveImage('png');
+        document.getElementById('btnJpg').onclick = () => saveImage('jpeg');
+    }
+
+    function saveImage(format) {
+        // Temporalmente subimos resolución para la foto
+        const oldRes = state.resolution;
+        if(oldRes < 1) {
+            state.resolution = 1.0; 
+            resize();
+        }
+        
+        if(format === 'jpeg') {
+            const link = document.createElement('a');
+            link.download = `fractal_mandelbrot.${format}`;
+            link.href = canvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+        } else {
+            const link = document.createElement('a');
+            link.download = `fractal_mandelbrot.${format}`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Restaurar
+        if(oldRes < 1) {
+            state.resolution = oldRes;
+            resize();
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>

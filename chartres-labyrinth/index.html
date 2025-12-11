@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Laberinto de Chartres: Meditación - Geometría Sagrada TOP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Herramienta de meditación visual basada en el Laberinto de la Catedral de Chartres. Recorre el camino sagrado virtualmente para calmar la mente.">
+    
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+      crossorigin="anonymous"></script>
+
+    <style>
+        /* ESTILO "CRYSTAL FORGE PRO" - THEME: CATHEDRAL STONE & BLUE */
+        html, body { 
+            margin: 0; padding: 0; background-color: #050505; font-family: 'Segoe UI', sans-serif; color: #ddd; 
+            overflow-x: hidden; overscroll-behavior: none;
+        }
+        
+        #app-wrapper { 
+            display: flex; width: 100%; height: 100vh; overflow: hidden; position: relative;
+        }
+        
+        #canvas-container {
+            flex: 3; position: relative;
+            /* Fondo azul profundo estilo vidriera de Chartres */
+            background: radial-gradient(circle at center, #1a2a3a 0%, #000 80%);
+            cursor: pointer; overflow: hidden; touch-action: none;
+        }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        #controls-container {
+            flex: 2; min-width: 320px; background-color: #0a0a0a; padding: 25px;
+            overflow-y: auto; box-shadow: -5px 0 30px rgba(0,0,0,0.8); border-left: 1px solid #333; z-index: 10;
+        }
+
+        /* Títulos en tono Piedra/Oro Viejo */
+        h2 { color: #d4af37; margin: 0 0 15px 0; text-align: center; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 15px rgba(212, 175, 55, 0.3); }
+        
+        /* BOTONES EXPORTACIÓN */
+        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; }
+        .export-btn {
+            flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+            transition: transform 0.1s, filter 0.2s; font-size: 0.9em;
+        }
+        .export-btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
+        #btnPng { background-color: #d4af37; color: #000; } 
+        #btnJpg { background-color: #fff; color: #000; } 
+
+        .control-group { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .control-row { display: flex; align-items: center; margin-bottom: 12px; font-size: 0.9em; justify-content: space-between; }
+        .control-label { color: #ccc; font-weight: 500; flex: 1; }
+        
+        input[type=range] { flex: 2; cursor: pointer; accent-color: #d4af37; }
+        input[type=color] { border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; padding: 0; overflow: hidden; }
+        .value-display { flex: 0.5; text-align: right; font-family: monospace; color: #d4af37; font-size: 0.9em; }
+
+        .btn-main {
+            width: 100%; padding: 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 10px;
+            background: linear-gradient(45deg, #d4af37, #8a6e23); color: #fff; font-size: 1.1em;
+            transition: all 0.3s; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+        }
+        .btn-main:hover { filter: brightness(1.2); letter-spacing: 1px; }
+
+        /* SECCIÓN INFORMATIVA */
+        .content-section { max-width: 900px; margin: 0 auto; padding: 60px 20px; background-color: #050505; position: relative; z-index: 20; }
+        .ad-placeholder {
+            width: 100%; height: 120px; background: #0f0f0f; margin: 40px 0;
+            border: 1px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.9em; font-style: italic;
+        }
+        article h2 { color: #d4af37; border-left: 4px solid #d4af37; padding-left: 15px; margin-top: 60px; font-size: 2em; letter-spacing: 1px;}
+        article h3 { color: #fff; margin-top: 40px; font-size: 1.5em; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        article p { margin-bottom: 20px; font-size: 1.1em; color: #ccc; line-height: 1.8; text-align: justify; }
+        article ul { list-style: none; padding: 0; }
+        article li { margin-bottom: 15px; padding-left: 20px; border-left: 2px solid #d4af37; color: #bbb; }
+        article strong { color: #d4af37; }
+
+        footer { background-color: #000; padding: 50px 20px; text-align: center; border-top: 1px solid #222; font-size: 0.9em; color: #666; position: relative; z-index: 20;}
+        footer a { color: #888; text-decoration: none; margin: 0 10px; transition: color 0.3s; }
+        footer a:hover { color: #d4af37; }
+
+        @media (max-width: 800px) and (orientation: portrait) {
+            #app-wrapper { display: block; height: auto; }
+            #canvas-container { height: 50vh; border-bottom: 2px solid #d4af37; }
+            #controls-container { height: auto; }
+        }
+        @media (max-width: 900px) and (orientation: landscape) {
+            #controls-container { padding: 15px; }
+            h2 { font-size: 1.2em; }
+            .control-group { padding: 10px; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-wrapper">
+    <div id="canvas-container">
+        <canvas id="labyrinthCanvas"></canvas>
+    </div>
+
+    <div id="controls-container">
+        <h2>El Camino Interior</h2>
+        
+        <div class="btn-group">
+            <button id="btnPng" class="export-btn">💾 Guardar PNG</button>
+            <button id="btnJpg" class="export-btn">📸 Guardar JPG</button>
+        </div>
+
+        <button id="btnToggleWalk" class="btn-main">🚶‍♂️ Iniciar Peregrinación</button>
+        <p id="statusText" style="text-align:center; color:#888; font-size:0.9em; margin-top:-5px;">Haz clic para empezar</p>
+
+        <div class="control-group">
+            <h3 style="margin:0 0 15px 0; color:#fff; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Ritmo & Diseño</h3>
+            
+            <div class="control-row">
+                <span class="control-label">⏳ Velocidad (Respiración)</span>
+                <input type="range" id="speed" min="1" max="10" step="0.5" value="3">
+                <span id="speedVal" class="value-display">3.0</span>
+            </div>
+            
+            <div class="control-row">
+                <span class="control-label">🌀 Circuitos (Complejidad)</span>
+                <input type="range" id="circuits" min="3" max="11" step="2" value="7">
+                <span id="circuitVal" class="value-display">7</span>
+            </div>
+
+            <div class="control-row">
+                <span class="control-label">Grosor Muro</span>
+                <input type="range" id="wallWidth" min="1" max="10" step="1" value="4">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3 style="margin:0 0 15px 0; color:#fff; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Atmósfera</h3>
+            
+            <div class="control-row">
+                <span class="control-label">Color Muros</span>
+                <input type="color" id="colorWalls" value="#555555"> 
+            </div>
+            <div class="control-row">
+                <span class="control-label">Color Camino</span>
+                <input type="color" id="colorPath" value="#111111"> 
+            </div>
+            <div class="control-row">
+                <span class="control-label">Color Orbe (Alma)</span>
+                <input type="color" id="colorOrb" value="#d4af37"> 
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top:20px;">
+            <a href="../index.html" style="color:#d4af37; text-decoration:none; font-weight:bold; font-size:0.9em;">← Volver al Hub Central</a>
+        </div>
+    </div>
+</div>
+
+<section class="content-section">
+    <div class="ad-placeholder">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_chartres_labyrinth -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="5182108676"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </div>
+
+    <article>
+        <h2>Laberinto: El Camino hacia el Centro de Ti Mismo</h2>
+        <p>A menudo confundimos "Laberinto" (Labyrinth) con "Laberinto de perdición" (Maze). La diferencia es espiritual:</p>
+        <ul>
+            <li><strong>Un Maze</strong> tiene muchas opciones, caminos sin salida y está diseñado para confundirte y que pierdas el rumbo. Es un juego del ego.</li>
+            <li><strong>Un Laberinto Sagrado</strong> (como el de Chartres) tiene <strong>un solo camino</strong> (unicursal). No hay decisiones que tomar, no puedes perderte. Solo tienes que confiar en el sendero. Es una herramienta del alma.</li>
+        </ul>
+
+        <h3>El Viaje del Héroe: Significado de los Circuitos</h3>
+        <p>En la Geometría Sagrada, el camino del laberinto no es aleatorio; es un mapa del <strong>Viaje del Alma</strong>. Dependiendo del número de circuitos (vueltas) que elijas en el generador, la energía del recorrido cambia:</p>
+        
+        <ul>
+            <li><strong>3 Circuitos (El Origen):</strong> El diseño más simple y primordial. Representa las tres partes del ser (Cuerpo, Mente, Espíritu) o el ciclo del tiempo (Pasado, Presente, Futuro). Es un camino directo y reconfortante, ideal para principiantes o niños.</li>
+            
+            <li><strong>5 Circuitos (El Guerrero):</strong> Asociado al cambio y la adaptación. Al tener cinco vueltas, se conecta con los 5 elementos y los 5 sentidos. Es un diseño de equilibrio, un paso intermedio entre lo físico y lo espiritual.</li>
+            
+            <li><strong>7 Circuitos (El Clásico Cretense):</strong> El diseño más antiguo y famoso de la antigüedad. Aquí aprendemos una lección vital de paciencia.
+            <br><em>La trampa del ego:</em> Entras y el camino te lleva casi inmediatamente cerca del centro (al anillo 3). Te da una "falsa sensación" de que ya has llegado a la meta. Pero justo entonces, el camino te expulsa hacia el anillo más exterior, lejos del objetivo. Nos enseña que, en la vida, el camino más corto no siempre es una línea recta.</li>
+            
+            <li><strong>9 Circuitos (La Gestación):</strong> El número 9 representa la culminación de un ciclo (como los 9 meses de embarazo). Es un laberinto de transición, introspección profunda y preparación para un renacimiento espiritual.</li>
+            
+            <li><strong>11 Circuitos (La Maestría de Chartres):</strong> El diseño definitivo de las catedrales góticas. La vibración más alta.
+            <br><em>El Gran Viaje:</em> Ocurre lo mismo que en el de 7 circuitos pero a mayor escala. Entras y caminas recto por el pasillo hasta el anillo 5, rozando la divinidad, para luego ser enviado a la periferia a purgar el ego ("Purgatorio"). Es una peregrinación completa que alinea los chakras superiores antes de permitirte entrar finalmente en la Roseta central.</li>
+        </ul>
+
+        <h3>Cómo usar esta herramienta para Meditar</h3>
+        <p>Hemos diseñado este espacio para calmar la ansiedad y centrar la mente. Te sugerimos dos formas de uso:</p>
+        <ol>
+            <li><strong>Respiración Sincronizada (Modo Auto):</strong> Pulsa "Iniciar Peregrinación". Sigue la orbe de luz con tu mirada. Inhala profundamente mientras la luz recorre un circuito hacia adentro, y exhala cuando cambie de rumbo hacia afuera. Ajusta la velocidad para que coincida con tu ritmo cardíaco.</li>
+            <li><strong>Recorrido Visual:</strong> Detén la animación. Usa tu dedo (en móvil) o el puntero del ratón para recorrer el camino lentamente, consciente de cada giro, sintiendo cómo te alejas y te acercas al centro, confiando en que el camino te lleva.</li>
+        </ol>
+    </article>
+
+    <div class="ad-placeholder">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_chartres_labyrinth -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="5182108676"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </div>
+</section>
+
+<footer>
+    <div style="margin-bottom: 30px;">
+        <p style="margin-bottom: 10px; color: #aaa;">¿Te ha fascinado la geometría?</p>
+        <a href="https://www.paypal.com/paypalme/pbazan" target="_blank" style="display: inline-block; background-color: #0070BA; color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(0,112,186, 0.3);">☕ Invítame a un café</a>
+    </div>
+    <p>&copy; 2025 Geometría Sagrada Top.</p>
+    <br>
+    <a href="../legal.html#privacidad">Política de Privacidad</a> | <a href="../legal.html#terminos">Términos</a> | <a href="mailto:geometriasagradatop@gmail.com">Contacto</a>
+</footer>
+
+<script>
+    const canvas = document.getElementById('labyrinthCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // ESTADO
+    const state = {
+        circuits: 7, 
+        wallWidth: 4,
+        speed: 3,
+        walking: false,
+        progress: 0, 
+        colorWalls: '#555555',
+        colorPath: '#111111',
+        colorOrb: '#d4af37',
+        pathData: [] 
+    };
+
+    let centerX, centerY, maxRadius;
+
+    function init() {
+        resize();
+        window.addEventListener('resize', resize);
+        setupControls();
+        generatePathData();
+        animate();
+    }
+
+    function resize() {
+        const parent = canvas.parentElement;
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight;
+        centerX = canvas.width / 2;
+        centerY = canvas.height / 2;
+        maxRadius = Math.min(centerX, centerY) * 0.9;
+        generatePathData(); 
+    }
+
+    // --- ALGORITMO DEL CAMINO SAGRADO ---
+    function generatePathData() {
+        state.pathData = [];
+        const circuits = state.circuits;
+        // Calculamos el ancho de carril. +1.5 para dar margen al centro y bordes.
+        const laneWidth = maxRadius / (circuits + 1.5); 
+        
+        // SECUENCIAS SAGRADAS (Orden de visita de los anillos desde el centro hacia fuera)
+        // 1 = Anillo más interno (cerca del centro)
+        // 7 u 11 = Anillo más externo
+        
+        let sequence = [];
+        if (circuits === 3) {
+            // Laberinto simple (Hopi/Romano)
+            sequence = [1, 2, 3]; 
+        } else if (circuits === 7) {
+            // Laberinto Cretense Clásico
+            // Entras y vas directo al 3 (contando desde el centro hacia afuera es el 3er nivel?)
+            // En notación estándar (0=centro, 1=interno, 7=externo):
+            // La secuencia clásica de "semilla" genera: 3-2-1-4-7-6-5-8(centro)
+            sequence = [3, 2, 1, 4, 7, 6, 5];
+        } else if (circuits === 11) {
+            // Laberinto Chartres
+            // La entrada nos lleva al circuito 5.
+            sequence = [5, 4, 3, 2, 1, 6, 11, 10, 9, 8, 7];
+        } else {
+            // Generador genérico para otros números
+            for(let i=1; i<=circuits; i++) sequence.push(i);
+            // Mezclamos un poco para que no sea una espiral aburrida si es par/impar
+            if(circuits > 5) sequence.reverse(); 
+        }
+
+        const stepsPerRing = 120; // Puntos por vuelta
+        
+        // --- 1. EL PASILLO DE ENTRADA (EJE VERTICAL) ---
+        // La orbe empieza abajo del todo
+        state.pathData.push({x: centerX, y: canvas.height});
+        
+        // Camina RECTO hacia arriba hasta llegar al radio del primer anillo de la secuencia
+        // Esto simula caminar por el pasillo de entrada saltándose los otros anillos
+        const firstRingIndex = sequence[0];
+        const startRadius = firstRingIndex * laneWidth;
+        
+        // Añadimos puntos intermedios para que la animación de entrada tenga velocidad constante
+        const entrySteps = 30;
+        for(let j=0; j<=entrySteps; j++) {
+            const t = j/entrySteps;
+            const currentY = canvas.height - ((canvas.height - (centerY + startRadius)) * t);
+            state.pathData.push({x: centerX, y: currentY});
+        }
+
+        // --- 2. RECORRIDO DE LOS ANILLOS ---
+        for (let i = 0; i < sequence.length; i++) {
+            const ringIndex = sequence[i]; 
+            const radius = ringIndex * laneWidth;
+            
+            // Alternar dirección: Pares horario, Impares antihorario (o viceversa según diseño)
+            // En Chartres, esto es lo que crea el "giro" de la conciencia.
+            const isClockwise = (i % 2 !== 0); 
+            
+            // Definimos el arco. No es un círculo completo, deja el hueco del "pasillo"
+            // Empezamos en PI/2 (Abajo) y damos casi toda la vuelta
+            const startAngle = Math.PI / 2; 
+            const endAngle = Math.PI / 2 + (Math.PI * 2 * 0.96) * (isClockwise ? 1 : -1);
+
+            for (let s = 0; s <= stepsPerRing; s++) {
+                const t = s / stepsPerRing;
+                
+                // Interpolación suave (Efecto "Sine") para que los giros en los extremos sean orgánicos
+                // en lugar de rebotar bruscamente
+                const easeT = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; 
+                
+                const angle = startAngle + (endAngle - startAngle) * t; // Usamos t lineal o easeT
+                
+                // Transición entre anillos:
+                // Si estamos cambiando de anillo, interpolamos el radio con el siguiente
+                let r = radius;
+                
+                state.pathData.push({
+                    x: centerX + r * Math.cos(angle),
+                    y: centerY + r * Math.sin(angle)
+                });
+            }
+        }
+        
+        // --- 3. LLEGADA AL CENTRO (La Roseta) ---
+        // Último tramo recto hacia el corazón
+        const lastRadius = sequence[sequence.length-1] * laneWidth;
+        state.pathData.push({x: centerX, y: centerY + lastRadius}); // Posicionarse
+        state.pathData.push({x: centerX, y: centerY}); // Entrar al centro
+    }
+
+    function draw() {
+        ctx.clearRect(0,0, canvas.width, canvas.height);
+
+        const laneWidth = maxRadius / (state.circuits + 1.5);
+
+        // 1. DIBUJAR MUROS
+        ctx.strokeStyle = state.colorWalls;
+        ctx.lineWidth = state.wallWidth;
+        // Usamos 'butt' para que los cortes del pasillo sean limpios
+        ctx.lineCap = 'butt'; 
+
+        // Dibujamos arcos abiertos dejando el pasillo central libre
+        // El "Gap" es el ancho del pasillo por donde entra la orbe
+        const gapAngle = 0.15; // Apertura del muro
+
+        for (let i = 1; i <= state.circuits; i++) {
+            const r = i * laneWidth + (laneWidth/2); // Muro entre carriles
+            ctx.beginPath();
+            // Dibujamos desde un lado del pasillo hasta el otro
+            ctx.arc(centerX, centerY, r, Math.PI/2 + gapAngle, Math.PI/2 + (Math.PI*2) - gapAngle);
+            ctx.stroke();
+        }
+        
+        // Cruz central (Ejes) - Solo decorativa y sutil
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX, centerY + maxRadius + 20);
+        ctx.stroke();
+
+        // 2. DIBUJAR ORBE
+        if (state.pathData.length > 0) {
+            const totalPoints = state.pathData.length;
+            const currentIndex = Math.min(
+                Math.floor(state.progress * (totalPoints - 1)), 
+                totalPoints - 1
+            );
+            
+            const p = state.pathData[currentIndex];
+
+            // Luz difusa
+            const glow = ctx.createRadialGradient(p.x, p.y, 1, p.x, p.y, laneWidth * 1.5);
+            glow.addColorStop(0, state.colorOrb);
+            glow.addColorStop(1, 'rgba(0,0,0,0)');
+
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, laneWidth * 1.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Núcleo
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, laneWidth * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    function animate() {
+        if (state.walking) {
+            // Ajustamos velocidad: más lento en el centro, más rápido fuera?
+            // No, velocidad constante es mejor para respiración.
+            const increment = (state.speed * 0.0003); 
+            state.progress += increment;
+
+            if (state.progress >= 1) {
+                state.progress = 1;
+                state.walking = false;
+                document.getElementById('btnToggleWalk').innerText = "↺ Reiniciar Camino";
+                document.getElementById('statusText').innerText = "Has llegado a tu Centro.";
+            }
+        }
+        draw();
+        requestAnimationFrame(animate);
+    }
+
+    function setupControls() {
+        const btnWalk = document.getElementById('btnToggleWalk');
+        const status = document.getElementById('statusText');
+
+        btnWalk.onclick = () => {
+            if (state.progress >= 1) {
+                state.progress = 0; 
+                state.walking = true;
+                btnWalk.innerText = "⏸ Pausar";
+                status.innerText = "Inhalando... Exhalando...";
+            } else {
+                state.walking = !state.walking;
+                if(state.walking) {
+                    btnWalk.innerText = "⏸ Pausar";
+                    status.innerText = "Sigue la luz con tu respiración...";
+                } else {
+                    btnWalk.innerText = "▶ Continuar";
+                    status.innerText = "Pausa";
+                }
+            }
+        };
+
+        document.getElementById('speed').oninput = (e) => {
+            state.speed = parseFloat(e.target.value);
+            document.getElementById('speedVal').innerText = state.speed;
+        };
+
+        document.getElementById('circuits').oninput = (e) => {
+            state.circuits = parseInt(e.target.value);
+            document.getElementById('circuitVal').innerText = state.circuits;
+            state.progress = 0;
+            state.walking = false;
+            btnWalk.innerText = "🚶‍♂️ Iniciar Peregrinación";
+            status.innerText = "Nuevo laberinto generado";
+            generatePathData();
+        };
+
+        document.getElementById('wallWidth').oninput = (e) => { state.wallWidth = parseInt(e.target.value); };
+        document.getElementById('colorWalls').oninput = (e) => { state.colorWalls = e.target.value; };
+        document.getElementById('colorPath').oninput = (e) => { state.colorPath = e.target.value; }; // (No usado en draw pero guardado)
+        document.getElementById('colorOrb').oninput = (e) => { state.colorOrb = e.target.value; };
+
+        document.getElementById('btnPng').onclick = () => saveImage('png');
+        document.getElementById('btnJpg').onclick = () => saveImage('jpeg');
+    }
+
+    function saveImage(format) {
+        if(format === 'jpeg') {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const tCtx = tempCanvas.getContext('2d');
+            tCtx.fillStyle = '#050505'; 
+            tCtx.fillRect(0,0, canvas.width, canvas.height);
+            tCtx.drawImage(canvas, 0, 0);
+            
+            const link = document.createElement('a');
+            link.download = `laberinto_sagrado.${format}`;
+            link.href = tempCanvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+        } else {
+            const link = document.createElement('a');
+            link.download = `laberinto_sagrado.${format}`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>

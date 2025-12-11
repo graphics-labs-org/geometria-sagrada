@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sólidos Platónicos 3D - Geometría Sagrada TOP</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+      crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Visualizador 3D profesional de los 5 Sólidos Platónicos. Explora la dualidad geométrica y la estructura de la materia.">
+    
+    <style>
+        /* ESTILO "CRYSTAL FORGE PRO" */
+        html, body { 
+            margin: 0; 
+            padding: 0;
+            background-color: #000; 
+            font-family: 'Segoe UI', sans-serif; 
+            color: #ddd; 
+            height: 100%; 
+        }
+        
+        /* Layout Principal */
+        #app-wrapper { 
+            display: flex; 
+            width: 100%; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+        
+        /* Contenedor del 3D */
+        #canvas-container {
+            flex: 3; 
+            position: relative;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
+            outline: none; 
+            cursor: grab;
+            overflow: hidden;
+            touch-action: none; 
+        }
+        #canvas-container:active { cursor: grabbing; }
+        
+        canvas { 
+            display: block; 
+            width: 100% !important; 
+            height: 100% !important; 
+            outline: none; 
+            filter: drop-shadow(0 0 15px rgba(0, 191, 255, 0.3)); 
+        }
+        
+        /* Contenedor de Controles */
+        #controls-container {
+            flex: 2; 
+            min-width: 340px; 
+            background-color: #050505; 
+            padding: 20px;
+            overflow-y: auto; 
+            box-shadow: -5px 0 30px rgba(0,0,0,0.8); 
+            border-left: 1px solid #222; 
+            z-index: 10;
+        }
+
+        h2 { color: #00BFFF; margin-bottom: 20px; text-align: center; letter-spacing: 3px; text-transform: uppercase; text-shadow: 0 0 10px rgba(0,191,255,0.5); }
+        
+        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; }
+        .export-btn {
+            flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+            transition: transform 0.1s, filter 0.2s;
+        }
+        .export-btn:hover { filter: brightness(1.2); }
+        #btnPng { background-color: #00BFFF; color: #000; } 
+        #btnJpg { background-color: #fff; color: #000; } 
+
+        /* SELECTOR DE SÓLIDOS */
+        .solid-selector {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 30px;
+        }
+        .solid-btn {
+            background: #111; border: 1px solid #333; color: #666; padding: 10px 5px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;
+            display:flex; flex-direction: column; justify-content:center; align-items:center;
+        }
+        .solid-btn svg { width: 30px; height: 30px; fill: none; stroke: #555; stroke-width: 2; transition: all 0.3s ease; }
+        .solid-btn span { font-size: 0.7em; margin-top: 5px; text-transform: uppercase; }
+        .solid-btn:hover { background: #222; transform: translateY(-3px); }
+        .solid-btn:hover svg { stroke: #fff; }
+        .solid-btn.active { background: rgba(0, 191, 255, 0.1); color: #00BFFF; box-shadow: 0 0 20px rgba(0,191,255,0.4); border-color: #00BFFF;}
+        .solid-btn.active svg { stroke: #00BFFF; filter: drop-shadow(0 0 5px #00BFFF); }
+
+        .control-group { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 18px; }
+        .control-row { display: flex; align-items: center; margin-bottom: 12px; font-size: 0.9em; }
+        .control-label { flex: 1; color: #ccc; font-weight: 500; }
+        
+        input[type=range] { flex-grow: 2; cursor: pointer; margin-right: 10px; accent-color: #00BFFF; }
+        input[type=color] { border: none; width: 40px; height: 30px; border-radius: 4px; cursor: pointer; padding: 0; }
+        .value-display { width: 40px; text-align: center; font-family: monospace; font-weight: bold; color: #fff; }
+
+        /* Contenido y Footer */
+        .content-section { max-width: 900px; margin: 0 auto; padding: 60px 20px; }
+        .ad-placeholder {
+            width: 100%; height: 120px; background: #0f0f0f; margin: 40px 0;
+            border: 1px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.8em;
+        }
+        article h2 { color: #00BFFF; border-left: 4px solid #00BFFF; padding-left: 15px; margin-top: 60px; font-size: 2em; letter-spacing: 1px;}
+        article h3 { color: #fff; margin-top: 40px; font-size: 1.5em; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        article h4 { color: #00BFFF; margin-top: 30px; margin-bottom: 10px; font-size: 1.2em; }
+        article p { margin-bottom: 20px; font-size: 1.1em; color: #ccc; line-height: 1.8; text-align: justify; }
+        
+        /* TABLA SVG */
+        table { width:100%; border-collapse: collapse; margin-top:30px; margin-bottom:40px; color:#ccc; background: #0a0a0a; border-radius: 8px; overflow: hidden; }
+        th { text-align:left; padding:15px; color:#00BFFF; background: #111; border-bottom:2px solid #00BFFF; text-transform: uppercase; font-size: 0.9em;}
+        td { padding:15px; border-bottom:1px solid #222; vertical-align: middle; }
+        tr:hover td { background: #151515; color: #fff; }
+        
+        .icon-cell { display: flex; align-items: center; gap: 10px; color: #fff; font-weight: bold; }
+        .table-svg { width: 24px; height: 24px; stroke: #00BFFF; fill: none; stroke-width: 2; }
+
+        footer { background-color: #000; padding: 50px 20px; text-align: center; border-top: 1px solid #222; font-size: 0.9em; color: #666; }
+        footer a { color: #888; text-decoration: none; margin: 0 10px; transition: color 0.3s; }
+        footer a:hover { color: #00BFFF; }
+
+        /* MÓVIL VERTICAL (PORTRAIT) */
+        @media (max-width: 800px) and (orientation: portrait) {
+            body { 
+                overflow-x: hidden; 
+                overflow-y: auto; 
+            }
+            #app-wrapper { 
+                display: block; 
+                height: auto; 
+                position: relative;
+            }
+            #canvas-container { 
+                width: 100%;
+                height: 55vh; 
+                min-height: 350px;
+                position: relative;
+                border-bottom: 2px solid #00BFFF;
+            }
+            #controls-container { 
+                width: 100%;
+                height: auto; 
+                border-left: none;
+                box-shadow: none;
+                padding-bottom: 50px;
+            }
+            .solid-selector { gap: 5px; }
+            .solid-btn svg { width: 24px; height: 24px; }
+            .solid-btn span { font-size: 0.6em; }
+        }
+
+        /* MÓVIL HORIZONTAL (LANDSCAPE) - LA SOLUCIÓN */
+        @media (max-width: 900px) and (orientation: landscape) {
+            #app-wrapper {
+                flex-direction: row !important; /* Lado a lado */
+                display: flex !important;
+                height: 100vh !important;
+                overflow: hidden !important;
+            }
+            #canvas-container {
+                width: 50% !important;
+                height: 100% !important;
+                flex: 1;
+                border-bottom: none;
+                border-right: 2px solid #222;
+            }
+            #controls-container {
+                width: 50% !important;
+                height: 100% !important;
+                overflow-y: auto !important; /* Scroll solo aquí */
+                flex: 1;
+                border-left: none;
+                padding: 15px;
+            }
+            h2 { margin-top: 0; font-size: 1.2em; } /* Título más pequeño */
+            .solid-selector { grid-template-columns: repeat(5, 1fr); gap: 5px; } /* Botones compactos */
+            
+            /* Ocultar elementos innecesarios en paisaje para ganar espacio */
+            .ad-placeholder, footer, .content-section {
+                display: none; 
+            }
+            /* Botón "Volver" más accesible */
+            #controls-container > div:last-child {
+                padding-bottom: 30px;
+            }
+        }
+    </style>
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "./libs/three.module.js"
+            }
+        }
+    </script>
+</head>
+<body>
+
+<div id="app-wrapper">
+    <div id="canvas-container">
+        </div>
+
+    <div id="controls-container">
+        <h2>SÓLIDOS PLATÓNICOS</h2>
+        
+        <div class="solid-selector">
+            <button class="solid-btn active" id="btn-0" title="Tetraedro (Fuego)">
+                <svg viewBox="0 0 100 100"><polygon points="50,10 90,80 10,80"/><line x1="50" y1="10" x2="50" y2="50"/><line x1="10" y1="80" x2="50" y2="50"/><line x1="90" y1="80" x2="50" y2="50"/></svg>
+                <span>Tetra</span>
+            </button>
+            <button class="solid-btn" id="btn-1" title="Cubo (Tierra)">
+                <svg viewBox="0 0 100 100"><rect x="25" y="25" width="50" height="50"/><rect x="35" y="15" width="50" height="50" style="opacity:0.5"/><line x1="25" y1="25" x2="35" y2="15"/><line x1="75" y1="25" x2="85" y2="15"/><line x1="25" y1="75" x2="35" y2="65"/><line x1="75" y1="75" x2="85" y2="65"/></svg>
+                <span>Cubo</span>
+            </button>
+            <button class="solid-btn" id="btn-2" title="Octaedro (Aire)">
+                <svg viewBox="0 0 100 100"><polygon points="50,5 95,50 50,95 5,50"/><line x1="50" y1="5" x2="50" y2="95"/><line x1="5" y1="50" x2="95" y2="50"/><line x1="50" y1="50" x2="25" y2="25" style="opacity:0.5"/></svg>
+                <span>Octa</span>
+            </button>
+            <button class="solid-btn" id="btn-3" title="Icosaedro (Agua)">
+                <svg viewBox="0 0 100 100"><polygon points="50,5 85,25 85,75 50,95 15,75 15,25"/><line x1="50" y1="5" x2="50" y2="95"/><line x1="15" y1="25" x2="85" y2="75"/><line x1="85" y1="25" x2="15" y2="75"/><line x1="15" y1="25" x2="50" y2="50"/><line x1="85" y1="25" x2="50" y2="50"/></svg>
+                <span>Icosa</span>
+            </button>
+            <button class="solid-btn" id="btn-4" title="Dodecaedro (Éter)">
+                <svg viewBox="0 0 100 100"><polygon points="50,5 90,35 75,85 25,85 10,35"/><line x1="50" y1="5" x2="50" y2="45"/><line x1="90" y1="35" x2="65" y2="55"/><line x1="75" y1="85" x2="50" y2="65"/><line x1="25" y1="85" x2="35" y2="55"/><line x1="10" y1="35" x2="50" y2="45"/><polygon points="50,45 65,55 50,65 35,55" style="opacity:0.7"/></svg>
+                <span>Dodeca</span>
+            </button>
+        </div>
+
+        <div class="btn-group">
+            <button id="btnPng" class="export-btn">💾 PNG</button>
+            <button id="btnJpg" class="export-btn">📸 JPG</button>
+        </div>
+
+        <div id="sliders-dock">
+            
+            <div class="control-group">
+                <h3 style="margin-top:0; color:#eee; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Dualidad (Geometría Oculta)</h3>
+                <div class="control-row">
+                    <span class="control-label" style="color:#00BFFF">Revelar Dual:</span>
+                    <input type="range" id="dualOpacityRange" min="0" max="100" value="0">
+                    <span id="dualVal" class="value-display">0%</span>
+                </div>
+                <p style="font-size:0.8em; color:#888; margin:0;">Muestra la figura complementaria interna.</p>
+            </div>
+
+            <div class="control-group">
+                <h3 style="margin-top:0; color:#eee; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Apariencia</h3>
+                <div class="control-row">
+                    <span class="control-label">Color Sólido:</span>
+                    <input type="color" id="mainColor" value="#00BFFF">
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Transparencia:</span>
+                    <input type="range" id="alphaRange" min="0" max="90" value="15">
+                    <span id="alphaVal" class="value-display">15%</span>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Fondo:</span>
+                    <input type="color" id="bgColor" value="#000000">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3 style="margin-top:0; color:#eee; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Rotación</h3>
+                <div class="control-row">
+                    <span class="control-label">Velocidad Auto:</span>
+                    <input type="range" id="speedRange" min="0" max="50" value="10">
+                </div>
+            </div>
+
+        </div>
+        
+        <div style="text-align:center; margin-top:20px;">
+            <a href="../index.html" style="color:#00BFFF; text-decoration:none; font-weight:bold;">← Volver al Hub Central</a>
+        </div>
+    </div>
+</div>
+
+<section class="content-section">
+    <div class="ad-placeholder">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+      crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="4498323211"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </div>
+    
+    <article>
+        <h2>Los Ladrillos de la Realidad</h2>
+        <p>Bienvenido a la <strong>Fragua de los Sólidos Platónicos</strong>. Estás interactuando con las cinco únicas formas en todo el universo que son matemáticamente perfectas en tres dimensiones. Son los "átomos" de la geometría sagrada, el plano sobre el cual se construye la materia física y etérica.</p>
+
+        <h3>¿Por qué son "Perfectos"?</h3>
+        <p>Para que un poliedro sea considerado "Platónico", debe cumplir tres reglas estrictas e inquebrantables, lo que explica por qué solo existen cinco:</p>
+        <ul>
+            <li><strong>Caras Idénticas:</strong> Todas sus caras deben ser el mismo polígono regular (ej: en el Cubo, todas son cuadrados perfectos).</li>
+            <li><strong>Aristas Iguales:</strong> Todas las líneas que conectan los vértices tienen exactamente la misma longitud.</li>
+            <li><strong>Vértices Uniformes:</strong> En cada esquina (vértice) debe converger el mismo número de caras.</li>
+        </ul>
+
+        <h3>Correspondencias y Significado Profundo</h3>
+        <p>Cada sólido vibra con una frecuencia específica y se asocia con un elemento alquímico. Aquí tienes la guía completa:</p>
+
+        <table>
+            <tr>
+                <th>Sólido</th>
+                <th>Geometría</th>
+                <th>Elemento</th>
+                <th>Cualidad / Chakra</th>
+            </tr>
+            <tr>
+                <td>
+                    <div class="icon-cell">
+                        <svg viewBox="0 0 100 100" class="table-svg"><polygon points="50,10 90,80 10,80"/><line x1="50" y1="10" x2="50" y2="50"/><line x1="10" y1="80" x2="50" y2="50"/><line x1="90" y1="80" x2="50" y2="50"/></svg>
+                        Tetraedro
+                    </div>
+                </td>
+                <td>4 Triángulos</td>
+                <td>Fuego</td>
+                <td>Voluntad, Transformación. Chakra Plexo Solar.</td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="icon-cell">
+                        <svg viewBox="0 0 100 100" class="table-svg"><rect x="25" y="25" width="50" height="50"/><rect x="35" y="15" width="50" height="50" style="opacity:0.5"/><line x1="25" y1="25" x2="35" y2="15"/><line x1="75" y1="25" x2="85" y2="15"/><line x1="25" y1="75" x2="35" y2="65"/><line x1="75" y1="75" x2="85" y2="65"/></svg>
+                        Cubo
+                    </div>
+                </td>
+                <td>6 Cuadrados</td>
+                <td>Tierra</td>
+                <td>Estabilidad, Materia. Chakra Raíz.</td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="icon-cell">
+                        <svg viewBox="0 0 100 100" class="table-svg"><polygon points="50,5 95,50 50,95 5,50"/><line x1="50" y1="5" x2="50" y2="95"/><line x1="5" y1="50" x2="95" y2="50"/><line x1="50" y1="50" x2="25" y2="25" style="opacity:0.5"/></svg>
+                        Octaedro
+                    </div>
+                </td>
+                <td>8 Triángulos</td>
+                <td>Aire</td>
+                <td>Intelecto, Equilibrio. Chakra Corazón.</td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="icon-cell">
+                        <svg viewBox="0 0 100 100" class="table-svg"><polygon points="50,5 85,25 85,75 50,95 15,75 15,25"/><line x1="50" y1="5" x2="50" y2="95"/><line x1="15" y1="25" x2="85" y2="75"/><line x1="85" y1="25" x2="15" y2="75"/><line x1="15" y1="25" x2="50" y2="50"/><line x1="85" y1="25" x2="50" y2="50"/></svg>
+                        Icosaedro
+                    </div>
+                </td>
+                <td>20 Triángulos</td>
+                <td>Agua</td>
+                <td>Emoción, Fluidez. Chakra Sacro.</td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="icon-cell">
+                        <svg viewBox="0 0 100 100" class="table-svg"><polygon points="50,5 90,35 75,85 25,85 10,35"/><line x1="50" y1="5" x2="50" y2="45"/><line x1="90" y1="35" x2="65" y2="55"/><line x1="75" y1="85" x2="50" y2="65"/><line x1="25" y1="85" x2="35" y2="55"/><line x1="10" y1="35" x2="50" y2="45"/><polygon points="50,45 65,55 50,65 35,55" style="opacity:0.7"/></svg>
+                        Dodecaedro
+                    </div>
+                </td>
+                <td>12 Pentágonos</td>
+                <td>Éter</td>
+                <td>Espíritu, Conciencia. Chakra Corona.</td>
+            </tr>
+        </table>
+
+        <div class="ad-placeholder">
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+      crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="4498323211"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        </div>
+
+        <h3>El Secreto de la Dualidad (La Magia Oculta)</h3>
+        <p>Una de las propiedades más fascinantes de estas formas es que son <strong>Duales</strong> entre sí. Esto significa que si tomas el punto central de cada cara de un sólido y los unes, obtienes otro sólido perfecto anidado en su interior.</p>
+        <p>Usa el deslizador <strong>"Revelar Dual"</strong> en nuestro laboratorio para visualizar este misterio:</p>
+        <ul>
+            <li>El <strong>Cubo</strong> (Tierra) contiene al <strong>Octaedro</strong> (Aire) en su corazón. Materia y Mente están conectadas.</li>
+            <li>El <strong>Dodecaedro</strong> (Espíritu) contiene al <strong>Icosaedro</strong> (Agua). La conciencia divina sostiene la emoción.</li>
+            <li>El <strong>Tetraedro</strong> (Fuego) es dual consigo mismo, formando la <strong>Merkaba</strong> o Estrella Tetraédrica, el vehículo de luz interdimensional.</li>
+        </ul>
+    </article>
+</section>
+
+<footer>
+    <div style="margin-bottom: 30px;">
+        <p style="margin-bottom: 10px; color: #aaa;">¿Te ha fascinado la geometría?</p>
+        <a href="https://www.paypal.com/paypalme/pbazan" target="_blank" style="display: inline-block; background-color: #0070BA; color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(0,112,186, 0.3);">☕ Invítame a un café</a>
+    </div>
+    <p>&copy; 2025 Geometría Sagrada Top.</p>
+    <br>
+    <a href="../legal.html#privacidad">Política de Privacidad</a> | <a href="../legal.html#terminos">Términos</a> | <a href="mailto:geometriasagradatop@gmail.com">Contacto</a>
+</footer>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from './libs/OrbitControls.js';
+
+    let scene, camera, renderer, controls;
+    let mainMesh, dualMesh, mainEdges, dualEdges;
+    let mainGroup, dualGroup;
+    
+    const state = {
+        currentType: 0, 
+        dualOpacity: 0,
+        color: 0x00BFFF,
+        bg: '#000000',
+        alpha: 0.15,
+        speed: 0.005
+    };
+
+    const container = document.getElementById('canvas-container');
+
+    init();
+    animate();
+
+    function init() {
+        scene = new THREE.Scene();
+        
+        // Calcular dimensiones iniciales correctamente
+        const width = container.offsetWidth;
+        const height = container.offsetHeight;
+        
+        const aspect = width / height;
+        camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 100);
+        camera.position.z = 5;
+
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.enableZoom = true;
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xffffff, 1);
+        pointLight.position.set(5, 5, 5);
+        scene.add(pointLight);
+
+        mainGroup = new THREE.Group();
+        dualGroup = new THREE.Group();
+        scene.add(mainGroup);
+        scene.add(dualGroup);
+
+        loadSolids(0);
+        setupListeners();
+        
+        // Escuchar cambios de tamaño (crítico para móviles al rotar pantalla)
+        window.addEventListener('resize', onWindowResize);
+    }
+
+    function createGeometry(type, size) {
+        switch(type) {
+            case 0: return new THREE.TetrahedronGeometry(size);
+            case 1: return new THREE.BoxGeometry(size/Math.sqrt(3)*2, size/Math.sqrt(3)*2, size/Math.sqrt(3)*2);
+            case 2: return new THREE.OctahedronGeometry(size);
+            case 3: return new THREE.IcosahedronGeometry(size);
+            case 4: return new THREE.DodecahedronGeometry(size);
+        }
+    }
+
+    function getDualType(type) {
+        if(type === 0) return 0;
+        if(type === 1) return 2;
+        if(type === 2) return 1;
+        if(type === 3) return 4;
+        if(type === 4) return 3;
+    }
+
+    function getDualSize(type) {
+        if(type === 0) return 0.33;
+        if(type === 1) return 0.75;
+        if(type === 2) return 0.65;
+        if(type === 3) return 0.85;
+        if(type === 4) return 0.78;
+    }
+
+    function loadSolids(type) {
+        state.currentType = type;
+        mainGroup.clear();
+        dualGroup.clear();
+
+        const mainGeo = createGeometry(type, 1.5);
+        const mainMat = new THREE.MeshPhongMaterial({
+            color: state.color, opacity: state.alpha, transparent: true, side: THREE.DoubleSide, shininess: 100, depthWrite: false
+        });
+        mainMesh = new THREE.Mesh(mainGeo, mainMat);
+        mainGroup.add(mainMesh);
+
+        const edgesGeo = new THREE.EdgesGeometry(mainGeo);
+        const edgesMat = new THREE.LineBasicMaterial({ color: state.color });
+        mainEdges = new THREE.LineSegments(edgesGeo, edgesMat);
+        mainGroup.add(mainEdges);
+
+        const dualType = getDualType(type);
+        const dualSize = 1.5 * getDualSize(type);
+        const dualGeo = createGeometry(dualType, dualSize);
+        const dualMat = new THREE.MeshPhongMaterial({
+            color: 0xffffff, opacity: state.dualOpacity, transparent: true, side: THREE.DoubleSide, depthWrite: false
+        });
+        dualMesh = new THREE.Mesh(dualGeo, dualMat);
+        if(type === 0) dualMesh.rotation.x = Math.PI / 2;
+        dualGroup.add(dualMesh);
+
+        const dEdgesGeo = new THREE.EdgesGeometry(dualGeo);
+        const dEdgesMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: state.dualOpacity });
+        dualEdges = new THREE.LineSegments(dEdgesGeo, dEdgesMat);
+        if(type === 0) dualEdges.rotation.x = Math.PI / 2;
+        dualGroup.add(dualEdges);
+        
+        document.querySelectorAll('.solid-btn').forEach((btn, i) => {
+            if(i === type) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+    }
+
+    function updateMaterials() {
+        if(mainMesh) {
+            mainMesh.material.color.setHex(state.color);
+            mainMesh.material.opacity = state.alpha;
+            mainEdges.material.color.setHex(state.color);
+        }
+        if(dualMesh) {
+            dualMesh.material.opacity = state.dualOpacity;
+            dualEdges.material.opacity = state.dualOpacity;
+            dualGroup.visible = state.dualOpacity > 0.01;
+        }
+    }
+
+    function setupListeners() {
+        document.getElementById('btn-0').onclick = () => loadSolids(0);
+        document.getElementById('btn-1').onclick = () => loadSolids(1);
+        document.getElementById('btn-2').onclick = () => loadSolids(2);
+        document.getElementById('btn-3').onclick = () => loadSolids(3);
+        document.getElementById('btn-4').onclick = () => loadSolids(4);
+
+        document.getElementById('dualOpacityRange').addEventListener('input', (e) => {
+            state.dualOpacity = parseInt(e.target.value) / 100;
+            document.getElementById('dualVal').innerText = e.target.value + '%';
+            updateMaterials();
+        });
+        
+        document.getElementById('alphaRange').addEventListener('input', (e) => {
+            state.alpha = parseInt(e.target.value) / 100;
+            document.getElementById('alphaVal').innerText = e.target.value + '%';
+            updateMaterials();
+        });
+
+        document.getElementById('speedRange').addEventListener('input', (e) => {
+            state.speed = parseInt(e.target.value) / 2000;
+        });
+
+        document.getElementById('mainColor').addEventListener('input', (e) => {
+            state.color = parseInt(e.target.value.replace('#', '0x'), 16);
+            updateMaterials();
+        });
+
+        document.getElementById('bgColor').addEventListener('input', (e) => {
+            container.style.background = `radial-gradient(circle at center, ${e.target.value} 0%, #000 100%)`;
+        });
+
+        document.getElementById('btnPng').addEventListener('click', () => saveImage('png'));
+        document.getElementById('btnJpg').addEventListener('click', () => saveImage('jpeg'));
+    }
+
+    function saveImage(format) {
+        renderer.render(scene, camera);
+        const link = document.createElement('a');
+        link.download = `solido_platonico.${format}`;
+        link.href = renderer.domElement.toDataURL(`image/${format}`, 0.9);
+        link.click();
+    }
+
+    function onWindowResize() {
+        if(!container || !camera || !renderer) return;
+        const width = container.offsetWidth;
+        const height = container.offsetHeight;
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        mainGroup.rotation.x += state.speed;
+        mainGroup.rotation.y += state.speed * 0.5;
+        dualGroup.rotation.copy(mainGroup.rotation);
+        controls.update();
+        renderer.render(scene, camera);
+    }
+</script>
+</body>
+</html>

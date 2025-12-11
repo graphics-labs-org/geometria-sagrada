@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es">
+<script>
+    // Bloquear clic derecho
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
+    // Bloquear teclas comunes de desarrollador (F12, Ctrl+U, etc)
+    document.onkeydown = function(e) {
+        if(event.keyCode == 123) { return false; } // F12
+        if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { return false; } // Ctrl+Shift+I
+        if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) { return false; } // Ctrl+Shift+C
+        if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) { return false; } // Ctrl+Shift+J
+        if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { return false; } // Ctrl+U
+    }
+</script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Generador y laboratorio de Sri Yantra interactivo. Diseña geometría sagrada perfecta, ajusta los triángulos Shiva y Shakti y exporta en alta calidad.">
+    <meta name="keywords" content="Sri Yantra, Geometría Sagrada, Generador Yantra, Meditación, Shiva Shakti, Diseño Paramétrico">
+    <meta name="author" content="Sri Sharka Lab">
+    
+    <title>Sri Sharka Lab | Generador de Geometría Sagrada Online</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+
+    <style>
+        /* --- ESTILOS GENERALES DEL SITIO --- */
+        body {
+            margin: 0;
+            background-color: #121212; /* Fondo oscuro general */
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        /* Cabecera */
+        header {
+            background-color: #1a1a1a;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        header h1 { margin: 0; color: #FFD700; letter-spacing: 2px; font-size: 1.8em; }
+        header p { margin: 5px 0 0; color: #888; font-size: 0.9em; }
+
+        /* Contenedor de la Aplicación (El Lab) */
+        #app-wrapper {
+            height: 90vh; /* Ocupa casi toda la pantalla inicial */
+            border-bottom: 2px solid #333;
+            position: relative;
+        }
+
+        /* --- AQUÍ EMPIEZA EL CSS DE TU APLICACIÓN V8 (INTEGRADO) --- */
+        #main-container { display: flex; width: 100%; height: 100%; }
+        
+        #canvas-container {
+            flex: 3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ffffff; 
+            padding: 20px;
+            transition: background-color 0.2s ease;
+        }
+        canvas {
+            box-shadow: 0 0 40px rgba(0,0,0,0.15);
+            border-radius: 50%; 
+            max-width: 100%;
+            max-height: 100%;
+        }
+        #controls-container {
+            flex: 2;
+            min-width: 350px;
+            background-color: #1a1a1a;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+            border-left: 1px solid #333;
+        }
+        
+        /* Tipografía App */
+        h2.app-title { color: #fff; margin-bottom: 20px; text-align: center; letter-spacing: 1px; font-size: 1.4em;}
+        
+        /* Botones Exportar */
+        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; }
+        .export-btn {
+            flex: 1; padding: 12px; border: none; border-radius: 6px;
+            font-size: 1em; font-weight: bold; cursor: pointer;
+            transition: transform 0.1s, filter 0.2s;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .export-btn:active { transform: scale(0.98); }
+        .export-btn:hover { filter: brightness(1.1); }
+        #btnPng { background-color: #FFD700; color: #1a1a1a; }
+        #btnJpg { background-color: #FF4500; color: #fff; }
+
+        h3.section-header { 
+            color: #eee; margin-top: 30px; margin-bottom: 15px;
+            border-bottom: 2px solid #444; padding-bottom: 8px;
+            font-size: 1.1em; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        /* Controles */
+        .control-group {
+            background: rgba(255,255,255,0.05); border: 1px solid #333;
+            border-radius: 8px; padding: 15px; margin-bottom: 18px;
+        }
+        .triangle-title {
+            font-weight: bold; margin-bottom: 12px; display: inline-block;
+            font-size: 0.95em; transition: all 0.3s ease; padding: 2px 5px; border-radius: 4px;
+        }
+        .high-contrast-label { background-color: rgba(240, 240, 240, 0.95) !important; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+
+        .control-row { display: flex; align-items: center; margin-bottom: 10px; font-size: 0.9em; }
+        .control-label { flex: 1; color: #ccc; font-weight: 500; }
+        
+        input[type=color] {
+            -webkit-appearance: none; border: none; width: 60px; height: 35px;
+            padding: 0; border-radius: 6px; overflow: hidden; cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type=color]::-webkit-color-swatch { border: none; }
+
+        input[type=range] { flex-grow: 2; cursor: pointer; margin-right: 15px; }
+        .value-display { width: 35px; text-align: center; color: #fff; font-family: monospace; font-weight: bold; }
+
+        /* --- FIN CSS APLICACIÓN --- */
+
+        /* --- SECCIÓN DE CONTENIDO (SEO & ADSENSE) --- */
+        .content-section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            background-color: #121212;
+        }
+        
+        .ad-banner {
+            width: 100%;
+            height: 100px;
+            background-color: #1f1f1f;
+            margin: 40px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #444;
+            border: 1px dashed #333;
+            text-transform: uppercase;
+            font-size: 0.8em;
+        }
+
+        article h2 { color: #FFD700; border-left: 4px solid #FF4500; padding-left: 15px; margin-top: 40px; }
+        article p { margin-bottom: 20px; font-size: 1.1em; color: #ccc; }
+        article strong { color: #fff; }
+        
+        footer {
+            background-color: #000;
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid #333;
+            font-size: 0.9em;
+            color: #666;
+        }
+        footer a { color: #888; text-decoration: none; margin: 0 10px; }
+        footer a:hover { color: #FFD700; }
+
+        /* Responsive para móvil */
+        @media (max-width: 800px) {
+            #main-container { flex-direction: column; }
+            #app-wrapper { height: auto; min-height: 120vh; }
+            #canvas-container { height: 50vh; }
+            #controls-container { height: auto; overflow: visible; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>SRI SHARKA LAB</h1>
+    <p>Herramienta Profesional de Geometría Sagrada</p>
+</header>
+
+<div id="app-wrapper">
+    <div id="main-container">
+        <div id="canvas-container">
+            <canvas id="yantraCanvas"></canvas>
+        </div>
+
+        <div id="controls-container">
+            <h2 class="app-title">PANEL DE CONTROL</h2>
+            
+            <div class="btn-group">
+                <button id="btnPng" class="export-btn">💾 PNG</button>
+                <button id="btnJpg" class="export-btn">📸 JPG</button>
+            </div>
+            
+            <div id="sliders-dock"></div>
+        </div>
+    </div>
+</div>
+
+<section class="content-section">
+    
+    <div class="ad-banner"><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_sri_yantra -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="2786975661"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script></div>
+
+    <article>
+        <h2>¿Qué es el Sri Yantra y por qué es tan difícil de dibujar?</h2>
+        <p>El <strong>Sri Yantra</strong> (o Sri Chakra) es uno de los símbolos más antiguos y poderosos de la geometría sagrada tántrica. Representa la unión de lo Masculino Divino y lo Femenino Divino, la danza cósmica entre el orden y el caos que crea el universo material.</p>
+        <p>Visualmente, se compone de nueve triángulos entrelazados que irradian desde un punto central o <em>bindu</em>. Cuatro triángulos apuntan hacia arriba, representando a <strong>Shiva</strong> (la conciencia masculina), y cinco apuntan hacia abajo, representando a <strong>Shakti</strong> (la energía femenina creativa).</p>
+
+        <h2>El Reto Matemático de las 14 Intersecciones</h2>
+        <p>Dibujar un Sri Yantra perfecto es un problema geométrico famoso. A diferencia de otros mandalas que son puramente artísticos, el Sri Yantra requiere una precisión matemática extrema. Los nueve triángulos deben entrelazarse de tal manera que formen 43 triángulos más pequeños, y lo más difícil: deben coincidir perfectamente en <strong>14 puntos nodales de intersección</strong>.</p>
+        <p>Si intentas dibujarlo con regla y compás sin cálculos previos, descubrirás que las líneas casi nunca se encuentran en el punto exacto. Siempre queda un pequeño error. Por eso hemos creado <strong>Sri Sharka Lab</strong>.</p>
+
+        <div class="ad-banner"<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_sri_yantra -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="2786975661"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script></div>
+
+        <h2>Cómo usar Sri Sharka Lab</h2>
+        <p>Esta herramienta ha sido diseñada para artistas, meditadores y estudiantes de geometría sagrada. A diferencia de las imágenes estáticas, este laboratorio es <strong>paramétrico</strong>, lo que te da control total sobre la forma:</p>
+        
+        <ul>
+            <li><strong>Control de Espectro Total:</strong> No te limites al blanco y negro. Usa los selectores de color para elegir cualquier tono del espectro visible para las fuerzas de Shiva, Shakti y el fondo. El sistema ajustará automáticamente el contraste de la interfaz.</li>
+            <li><strong>Ajuste de Precisión:</strong> Usa los deslizadores para mover la <strong>Punta</strong>, la <strong>Base</strong> y el <strong>Ancho</strong> de cada uno de los 9 triángulos de forma independiente. Esto te permite buscar visualmente la "intersección perfecta" o experimentar con nuevas variantes del Yantra.</li>
+            <li><strong>Exportación en Alta Resolución:</strong> Descarga tus creaciones en formato PNG (transparencia) o JPG (con fondo sólido) para usarlas en tus proyectos, impresiones o meditaciones digitales.</li>
+        </ul>
+
+        <h2>El Significado Espiritual</h2>
+        <p>Meditar sobre el Sri Yantra o dedicar tiempo a construirlo ayuda a equilibrar los hemisferios cerebrales. La parte lógica (izquierda) se ocupa de la estructura geométrica, mientras que la parte creativa (derecha) se ocupa de la armonía visual. <strong>Sri Sharka Lab</strong> te invita a entrar en ese estado de flujo, convirtiendo el diseño digital en una práctica espiritual moderna.</p>
+    </article>
+
+    <div class="ad-banner"><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_sri_yantra -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="2786975661"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script></div>
+
+</section>
+
+<footer>
+    <div style="margin-bottom: 30px;">
+        <p style="margin-bottom: 10px; color: #aaa;">¿Te ha sido útil esta herramienta?</p>
+        <a href="https://www.paypal.com/paypalme/pbazan" target="_blank" style="
+            display: inline-block;
+            background-color: #0070BA; /* Azul PayPal */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9em;
+            box-shadow: 0 4px 15px rgba(0,112,186, 0.3);
+            transition: transform 0.2s;
+        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            ☕ Invítame a un café (PayPal)
+        </a>
+    </div>
+    <p>&copy; 2025 Sri Sharka Lab - Geometría Sagrada.</p>
+    <br>
+    <a href="../privacidad.html">Política de Privacidad</a> | 
+    <a href="../legal.html#terminos">Términos de Uso</a> | 
+    <a href="../legal.html#cookies">Política de Cookies</a> | 
+    <a href="mailto:geometriasagradatop@gmail.com">Contactos</a>
+    <p style="margin-top: 20px; font-size: 0.8em; color: #444;">Este sitio utiliza cookies para mejorar la experiencia de usuario y mostrar publicidad relevante.</p>
+</footer>
+
+<script>
+    const canvas = document.getElementById('yantraCanvas');
+    const ctx = canvas.getContext('2d');
+    const slidersDock = document.getElementById('sliders-dock');
+    const canvasContainer = document.getElementById('canvas-container');
+    const btnPng = document.getElementById('btnPng');
+    const btnJpg = document.getElementById('btnJpg');
+
+    let size, cx, cy, scale;
+    
+    // Estado de Color Global
+    let globalColors = {
+        bg: '#ffffff',
+        shiva: '#FFD700',
+        shakti: '#FF4500'
+    };
+
+    // Estado Geométrico
+    let trianglesState = [
+        { id: 'sh1', type: 'shiva', name: 'Shiva 1 (Externo)', apexVal: -98, baseVal: 45, widthVal: 98 },
+        { id: 'sh2', type: 'shiva', name: 'Shiva 2', apexVal: -71, baseVal: 55, widthVal: 76 },
+        { id: 'sh3', type: 'shiva', name: 'Shiva 3', apexVal: -48, baseVal: 65, widthVal: 58 },
+        { id: 'sh4', type: 'shiva', name: 'Shiva 4 (Interno)', apexVal: -20, baseVal: 75, widthVal: 38 },
+        { id: 'shk1', type: 'shakti', name: 'Shakti 1 (Externo)', apexVal: 98, baseVal: -45, widthVal: 98 },
+        { id: 'shk2', type: 'shakti', name: 'Shakti 2', apexVal: 73, baseVal: -52, widthVal: 79 },
+        { id: 'shk3', type: 'shakti', name: 'Shakti 3', apexVal: 49, baseVal: -60, widthVal: 61 },
+        { id: 'shk4', type: 'shakti', name: 'Shakti 4', apexVal: 27, baseVal: -70, widthVal: 43 },
+        { id: 'shk5', type: 'shakti', name: 'Shakti 5 (Central)', apexVal: 8, baseVal: -80, widthVal: 26 }
+    ];
+
+    function init() {
+        createControls();
+        resizeCanvas();
+        updateDynamicColors();
+        setupExportListeners();
+    }
+
+    // --- SISTEMA DE EXPORTACIÓN ---
+    function setupExportListeners() {
+        const downloadImage = (format, ext) => {
+            const link = document.createElement('a');
+            link.download = `sri_sharka_lab.${ext}`;
+            link.href = canvas.toDataURL(format, 0.9);
+            link.click();
+            link.remove();
+        };
+
+        btnPng.addEventListener('click', () => downloadImage('image/png', 'png'));
+        btnJpg.addEventListener('click', () => downloadImage('image/jpeg', 'jpg'));
+    }
+
+    function resizeCanvas() {
+        size = Math.min(canvasContainer.offsetWidth, canvasContainer.offsetHeight) * 0.95;
+        canvas.width = size;
+        canvas.height = size;
+        cx = size / 2;
+        cy = size / 2;
+        scale = size / 2.5;
+        drawEverything();
+    }
+    window.addEventListener('resize', () => setTimeout(resizeCanvas, 50));
+
+    // --- CONTROLES UI ---
+    function createControls() {
+        slidersDock.appendChild(createHeader("Paleta de Colores"));
+        const colorGroup = document.createElement('div');
+        colorGroup.className = 'control-group';
+
+        const createColorPicker = (labelTxt, stateProp, titleClass) => {
+            const row = document.createElement('div'); row.className = 'control-row';
+            const label = document.createElement('span'); label.innerText = labelTxt; label.className = 'control-label ' + (titleClass || '');
+            const colorInput = document.createElement('input'); colorInput.type = 'color'; colorInput.value = globalColors[stateProp];
+
+            colorInput.addEventListener('input', (e) => {
+                globalColors[stateProp] = e.target.value;
+                drawEverything();
+                updateDynamicColors();
+            });
+            row.appendChild(label); row.appendChild(colorInput); return row;
+        }
+
+        colorGroup.appendChild(createColorPicker("Fondo:", 'bg'));
+        colorGroup.appendChild(createColorPicker("Fuerza Shiva:", 'shiva', 'shiva-text-target'));
+        colorGroup.appendChild(createColorPicker("Fuerza Shakti:", 'shakti', 'shakti-text-target'));
+        slidersDock.appendChild(colorGroup);
+
+        slidersDock.appendChild(createHeader("Geometría Shiva", "shiva-text-target"));
+        slidersDock.appendChild(createHeader("Geometría Shakti", "shakti-text-target"));
+
+        trianglesState.forEach((tri, index) => {
+            if(index === 4) slidersDock.insertBefore(slidersDock.lastChild, slidersDock.children[slidersDock.children.length-1]);
+            const groupWrapper = document.createElement('div'); groupWrapper.className = 'control-group';
+            const title = document.createElement('span'); title.innerText = tri.name;
+            title.className = 'triangle-title ' + (tri.type === 'shiva' ? 'shiva-title-target' : 'shakti-title-target');
+            groupWrapper.appendChild(title);
+
+            const createGeoSlider = (labelTxt, stateProp, minV, maxV) => {
+                const row = document.createElement('div'); row.className = 'control-row';
+                const label = document.createElement('span'); label.innerText = labelTxt; label.className = 'control-label';
+                const slider = document.createElement('input'); slider.type = 'range'; slider.min = minV; slider.max = maxV; slider.value = tri[stateProp];
+                const valDisplay = document.createElement('span'); valDisplay.className = 'value-display';
+                const updateDisplay = (val) => { valDisplay.innerText = Math.round(((val - minV) / (maxV - minV)) * 100); };
+                updateDisplay(slider.value);
+                slider.addEventListener('input', (e) => {
+                    trianglesState[index][stateProp] = parseInt(e.target.value);
+                    updateDisplay(e.target.value);
+                    drawEverything();
+                });
+                row.appendChild(label); row.appendChild(slider); row.appendChild(valDisplay); return row;
+            };
+
+            groupWrapper.appendChild(createGeoSlider("Punta:", 'apexVal', -130, 130));
+            groupWrapper.appendChild(createGeoSlider("Base:", 'baseVal', -130, 130));
+            groupWrapper.appendChild(createGeoSlider("Ancho:", 'widthVal', 5, 130));
+            if(tri.type === 'shiva') slidersDock.insertBefore(groupWrapper, slidersDock.lastChild.previousSibling);
+            else slidersDock.appendChild(groupWrapper);
+        });
+    }
+
+    function createHeader(text, className) {
+        let h = document.createElement('h3'); h.className = 'section-header ' + (className || ''); h.innerText = text; return h;
+    }
+
+    // --- CONTRASTE INTELIGENTE ---
+    function isColorDark(hex) {
+        const r = parseInt(hex.substring(1, 3), 16);
+        const g = parseInt(hex.substring(3, 5), 16);
+        const b = parseInt(hex.substring(5, 7), 16);
+        return ((r * 299 + g * 587 + b * 114) / 1000) < 128;
+    }
+
+    function updateDynamicColors() {
+        canvasContainer.style.backgroundColor = globalColors.bg;
+        const shivaIsDark = isColorDark(globalColors.shiva);
+        const shaktiIsDark = isColorDark(globalColors.shakti);
+
+        const applyContrast = (targetClass, color, isDark) => {
+            document.querySelectorAll(targetClass).forEach(el => {
+                el.style.color = color;
+                if (el.classList.contains('triangle-title')) {
+                    if(isDark) el.classList.add('high-contrast-label');
+                    else el.classList.remove('high-contrast-label');
+                }
+            });
+        };
+
+        applyContrast('.shiva-text-target', globalColors.shiva, false);
+        applyContrast('.shiva-title-target', globalColors.shiva, shivaIsDark);
+        applyContrast('.shakti-text-target', globalColors.shakti, false);
+        applyContrast('.shakti-title-target', globalColors.shakti, shaktiIsDark);
+    }
+
+    // --- MOTOR DE DIBUJO ---
+    function drawEverything() {
+        // Fondo real para la exportación
+        ctx.fillStyle = globalColors.bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.globalCompositeOperation = 'source-over'; 
+        drawStaticElements();
+        drawInteractiveTriangles();
+        drawBindu();
+    }
+
+    function drawInteractiveTriangles() {
+        ctx.lineWidth = 1.5;
+        const r = scale * 0.6; 
+
+        trianglesState.forEach(tri => {
+            const isUp = tri.type === 'shiva';
+            ctx.strokeStyle = isUp ? globalColors.shiva : globalColors.shakti;
+            const apexFactor = tri.apexVal / 100;
+            const baseFactor = tri.baseVal / 100;
+            const widthFactor = tri.widthVal / 100;
+            const yApex = cy + (apexFactor * r);
+            const yBase = cy + (baseFactor * r);
+            const halfW = widthFactor * r;
+
+            ctx.beginPath();
+            ctx.moveTo(cx, yApex);
+            ctx.lineTo(cx + halfW, yBase);
+            ctx.lineTo(cx - halfW, yBase);
+            ctx.closePath();
+            ctx.stroke();
+        });
+    }
+
+    function drawStaticElements() {
+        ctx.strokeStyle = globalColors.shiva; 
+        ctx.lineWidth = 2;
+        const s = scale * 1.1;
+        ctx.strokeRect(cx - s, cy - s, s*2, s*2);
+        
+        ctx.globalAlpha = 0.2;
+        drawCircle(scale * 0.9, globalColors.shiva);
+        drawCircle(scale * 0.6, globalColors.shiva);
+        ctx.globalAlpha = 1.0;
+    }
+    
+    function drawCircle(rad, col) {
+         ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI*2);
+         ctx.strokeStyle = col; ctx.stroke();
+    }
+
+    function drawBindu() {
+        ctx.fillStyle = globalColors.shakti;
+        ctx.beginPath(); ctx.arc(cx, cy, scale * 0.013, 0, Math.PI*2); ctx.fill();
+    }
+
+    init();
+</script>
+</body>
+
+</html>
+
+

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cimática: El Sonido Visible - Geometría Sagrada TOP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Simulador de Cimática y Placas de Chladni. Visualiza cómo las frecuencias de sonido estructuran la materia creando patrones geométricos sagrados.">
+    
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534" crossorigin="anonymous"></script>
+
+    <style>
+        /* ESTILO "CRYSTAL FORGE PRO" - THEME: ELECTRIC BLUE */
+        html, body { 
+            margin: 0; padding: 0; background-color: #000; font-family: 'Segoe UI', sans-serif; color: #ddd; 
+            overflow-x: hidden; overscroll-behavior: none;
+        }
+        
+        #app-wrapper { 
+            display: flex; width: 100%; height: 100vh; overflow: hidden; position: relative;
+        }
+        
+        #canvas-container {
+            flex: 3; position: relative;
+            background: radial-gradient(circle at center, #001a2e 0%, #000 90%);
+            cursor: grab; overflow: hidden; touch-action: none;
+        }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        #controls-container {
+            flex: 2; min-width: 320px; background-color: #050505; padding: 25px;
+            overflow-y: auto; box-shadow: -5px 0 30px rgba(0,0,0,0.8); border-left: 1px solid #222; z-index: 10;
+        }
+
+        h2 { color: #00FFFF; margin: 0 0 15px 0; text-align: center; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 15px rgba(0, 255, 255, 0.4); }
+        
+        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; }
+        .export-btn {
+            flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+            transition: transform 0.1s, filter 0.2s; font-size: 0.9em;
+        }
+        .export-btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
+        #btnPng { background-color: #00FFFF; color: #000; } 
+        #btnJpg { background-color: #fff; color: #000; } 
+
+        .control-group { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .control-row { display: flex; align-items: center; margin-bottom: 12px; font-size: 0.9em; justify-content: space-between; }
+        .control-label { color: #ccc; font-weight: 500; flex: 1; }
+        
+        input[type=range] { flex: 2; cursor: pointer; accent-color: #00FFFF; }
+        input[type=color] { border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; padding: 0; overflow: hidden; }
+        .value-display { flex: 0.5; text-align: right; font-family: monospace; color: #00FFFF; font-size: 0.9em; }
+
+        .btn-main {
+            width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 10px;
+            background: linear-gradient(45deg, #0088AA, #00FFFF); color: #000; font-size: 1em;
+            transition: all 0.3s; box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+        .btn-main:hover { filter: brightness(1.2); box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+
+        /* SECCIÓN DE CONTENIDO (TEXTO) */
+        .content-section { max-width: 900px; margin: 0 auto; padding: 60px 20px; background-color: #000; position: relative; z-index: 20; }
+        .ad-placeholder {
+            width: 100%; height: 120px; background: #0f0f0f; margin: 40px 0;
+            border: 1px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.9em; font-style: italic;
+        }
+        article h2 { color: #00FFFF; border-left: 4px solid #00FFFF; padding-left: 15px; margin-top: 60px; font-size: 2em; letter-spacing: 1px;}
+        article h3 { color: #fff; margin-top: 40px; font-size: 1.5em; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        article p { margin-bottom: 20px; font-size: 1.1em; color: #ccc; line-height: 1.8; text-align: justify; }
+        article ul { list-style: none; padding: 0; }
+        article li { margin-bottom: 15px; padding-left: 20px; border-left: 2px solid #00FFFF; color: #bbb; }
+        article strong { color: #00FFFF; }
+
+        footer { background-color: #050505; padding: 50px 20px; text-align: center; border-top: 1px solid #222; font-size: 0.9em; color: #666; position: relative; z-index: 20;}
+        footer a { color: #888; text-decoration: none; margin: 0 10px; transition: color 0.3s; }
+        footer a:hover { color: #00FFFF; }
+
+        @media (max-width: 800px) and (orientation: portrait) {
+            #app-wrapper { display: block; height: auto; }
+            #canvas-container { height: 50vh; border-bottom: 2px solid #00FFFF; }
+            #controls-container { height: auto; }
+        }
+        @media (max-width: 900px) and (orientation: landscape) {
+            #controls-container { padding: 15px; }
+            h2 { font-size: 1.2em; }
+            .control-group { padding: 10px; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-wrapper">
+    <div id="canvas-container">
+        <canvas id="cymaticsCanvas"></canvas>
+    </div>
+
+    <div id="controls-container">
+        <h2>Cimática (Interferencia)</h2>
+        
+        <div class="btn-group">
+            <button id="btnPng" class="export-btn">💾 Guardar PNG</button>
+            <button id="btnJpg" class="export-btn">📸 Guardar JPG</button>
+        </div>
+
+        <button id="btnRandom" class="btn-main">🎲 Resonancia Aleatoria</button>
+
+        <div class="control-group">
+            <h3 style="margin:0 0 15px 0; color:#fff; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Mezcla de Ondas</h3>
+            
+            <div class="control-row">
+                <span class="control-label">Frecuencia A (Eje N)</span>
+                <input type="range" id="freqA" min="1" max="15" step="0.1" value="2.0">
+                <span id="freqAVal" class="value-display">2.0</span>
+            </div>
+            
+            <div class="control-row">
+                <span class="control-label">Frecuencia B (Eje M)</span>
+                <input type="range" id="freqB" min="1" max="15" step="0.1" value="5.0">
+                <span id="freqBVal" class="value-display">5.0</span>
+            </div>
+            
+            <div class="control-row">
+                <span class="control-label">🌊 Intensidad</span>
+                <input type="range" id="amplitude" min="0.1" max="2.0" step="0.1" value="0.8">
+            </div>
+
+            <div class="control-row">
+                <span class="control-label">⏳ Amortiguación</span>
+                <input type="range" id="damping" min="0.80" max="0.99" step="0.01" value="0.92">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3 style="margin:0 0 15px 0; color:#fff; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Materia (Arena)</h3>
+            
+            <div class="control-row">
+                <span class="control-label">Cant. Partículas</span>
+                <input type="range" id="particleCount" min="1000" max="15000" step="1000" value="5000">
+                <span id="countVal" class="value-display">5k</span>
+            </div>
+
+            <div class="control-row">
+                <span class="control-label">Color Arena</span>
+                <input type="color" id="sandColor" value="#00FFFF"> 
+            </div>
+            
+            <div class="control-row">
+                <span class="control-label">Tamaño Grano</span>
+                <input type="range" id="sandSize" min="0.5" max="3" step="0.5" value="1.5">
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top:20px;">
+            <a href="../index.html" style="color:#00FFFF; text-decoration:none; font-weight:bold; font-size:0.9em;">← Volver al Hub Central</a>
+        </div>
+    </div>
+</div>
+
+<section class="content-section">
+    <div class="ad-placeholder">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_cymatics_lab -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="1265423708"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </div>
+
+    <article>
+        <h2>Cimática: Cuando el Sonido Crea la Forma</h2>
+        
+        <p><strong>El Concepto:</strong> <em>"En el principio fue el Verbo (Vibración)".</em></p>
+        <p>Esta frase ancestral apunta a una verdad que la física moderna ha confirmado: la vibración es el arquitecto fundamental de la realidad. Todo lo que vemos como "materia sólida" es, en realidad, energía vibrando a diferentes frecuencias. La <strong>Cimática</strong> (del griego "kyma", onda) es la ciencia que hace visible este sonido invisible.</p>
+
+        <h3>La Herramienta: Placas de Chladni</h3>
+        <p>Lo que tienes ante ti es una simulación física de alta precisión de una <strong>Placa de Chladni</strong>. Inventada por el físico Ernst Chladni en el siglo XVIII, el experimento original consistía en una placa metálica espolvoreada con arena fina.</p>
+        <p>Al hacer vibrar la placa (con un arco de violín o un altavoz), la arena cobra vida. Huye de las zonas de vibración intensa y busca refugio en las "líneas nodales" (zonas donde la vibración se cancela y es cero). El resultado es la formación instantánea de geometrías complejas.</p>
+
+        <h3>La Magia: Tú controlas la Creación</h3>
+        <p>En este laboratorio virtual, hemos sustituido la arena por miles de partículas digitales y el arco de violín por deslizadores matemáticos:</p>
+        <ul>
+            <li><strong>Frecuencias A y B:</strong> Aquí reside el secreto. Controlas la vibración en el eje horizontal y vertical independientemente. Al subir el tono, la arena se reorganiza sola formando mandalas geométricos cada vez más complejos.</li>
+            <li><strong>Interferencia:</strong> Cuando las frecuencias A y B son armónicas (ej: 2.0 y 4.0), verás patrones estables y simétricos. Cuando son disonantes, verás el caos buscando el orden.</li>
+            <li><strong>Intensidad:</strong> Controla la fuerza de la onda. Si la subes mucho, la arena "saltará" con energía; si la bajas, se asentará suavemente.</li>
+        </ul>
+
+        <h3>¿Por qué es Geometría Sagrada?</h3>
+        <p>Los patrones que emergen en esta placa no son aleatorios. Son los mismos patrones recurrentes que encontramos en la naturaleza: el caparazón de una tortuga, las manchas de un leopardo, la estructura de un copo de nieve o la disposición de los átomos en un cristal. La Cimática nos demuestra visualmente que la materia es simplemente sonido densificado y organizado por geometría.</p>
+    </article>
+
+    <div class="ad-placeholder">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_cymatics_lab -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="1265423708"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </div>
+</section>
+
+<footer>
+    <div style="margin-bottom: 30px;">
+        <p style="margin-bottom: 10px; color: #aaa;">¿Te ha fascinado la geometría?</p>
+        <a href="https://www.paypal.com/paypalme/pbazan" target="_blank" style="display: inline-block; background-color: #0070BA; color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(0,112,186, 0.3);">☕ Invítame a un café</a>
+    </div>
+    <p>&copy; 2025 Geometría Sagrada Top.</p>
+    <br>
+    <a href="../legal.html#privacidad">Política de Privacidad</a> | <a href="../legal.html#terminos">Términos</a> | <a href="mailto:geometriasagradatop@gmail.com">Contacto</a>
+</footer>
+
+<script>
+    const canvas = document.getElementById('cymaticsCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // ESTADO DE LA SIMULACIÓN
+    const state = {
+        freqA: 2.0,       // Frecuencia Eje X (N)
+        freqB: 5.0,       // Frecuencia Eje Y (M)
+        amplitude: 0.8,   
+        damping: 0.92,    
+        count: 5000,      
+        sandColor: '#00FFFF',
+        sandSize: 1.5,
+    };
+
+    let particles = [];
+    let width, height;
+    
+    function init() {
+        resize();
+        window.addEventListener('resize', resize);
+        setupControls();
+        initParticles();
+        animate();
+    }
+
+    function resize() {
+        const parent = canvas.parentElement;
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight;
+        width = canvas.width;
+        height = canvas.height;
+        initParticles(); 
+    }
+
+    class Particle {
+        constructor() {
+            this.reset();
+        }
+
+        reset() {
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+            this.vx = (Math.random() - 0.5) * 2;
+            this.vy = (Math.random() - 0.5) * 2;
+        }
+
+        update() {
+            // Normalizar coordenadas (-1 a 1)
+            const scale = Math.min(width, height) * 0.45; 
+            const nx = (this.x - width / 2) / scale;
+            const ny = (this.y - height / 2) / scale;
+
+            const pi = Math.PI;
+            
+            // --- ECUACIÓN DE INTERFERENCIA DE DOS EJES ---
+            const n = state.freqA;
+            const m = state.freqB;
+
+            // Fórmula clásica de Chladni para placa cuadrada
+            const vibration = Math.cos(n * pi * nx) * Math.cos(m * pi * ny) - 
+                              Math.cos(m * pi * nx) * Math.cos(n * pi * ny);
+
+            const stochasticForce = Math.abs(vibration) * state.amplitude * 2;
+
+            this.vx += (Math.random() - 0.5) * stochasticForce;
+            this.vy += (Math.random() - 0.5) * stochasticForce;
+
+            this.x += this.vx;
+            this.y += this.vy;
+
+            this.vx *= state.damping;
+            this.vy *= state.damping;
+
+            if (this.x < 0) this.x = width;
+            if (this.x > width) this.x = 0;
+            if (this.y < 0) this.y = height;
+            if (this.y > height) this.y = 0;
+        }
+    }
+
+    function initParticles() {
+        particles = [];
+        for(let i=0; i<state.count; i++) {
+            particles.push(new Particle());
+        }
+    }
+
+    function animate() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; 
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.fillStyle = state.sandColor;
+        
+        for(let p of particles) {
+            p.update();
+            ctx.fillRect(p.x, p.y, state.sandSize, state.sandSize);
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    function setupControls() {
+        // Frecuencia A
+        const freqAInput = document.getElementById('freqA');
+        const freqAVal = document.getElementById('freqAVal');
+        freqAInput.oninput = (e) => {
+            state.freqA = parseFloat(e.target.value);
+            freqAVal.innerText = state.freqA.toFixed(1);
+            wakeUpParticles();
+        };
+
+        // Frecuencia B
+        const freqBInput = document.getElementById('freqB');
+        const freqBVal = document.getElementById('freqBVal');
+        freqBInput.oninput = (e) => {
+            state.freqB = parseFloat(e.target.value);
+            freqBVal.innerText = state.freqB.toFixed(1);
+            wakeUpParticles();
+        };
+
+        document.getElementById('amplitude').oninput = (e) => {
+            state.amplitude = parseFloat(e.target.value);
+            wakeUpParticles();
+        };
+
+        document.getElementById('damping').oninput = (e) => {
+            state.damping = parseFloat(e.target.value);
+        };
+
+        const countInput = document.getElementById('particleCount');
+        const countVal = document.getElementById('countVal');
+        countInput.oninput = (e) => {
+            state.count = parseInt(e.target.value);
+            countVal.innerText = (state.count / 1000).toFixed(1) + 'k';
+            initParticles(); 
+        };
+
+        document.getElementById('sandColor').oninput = (e) => { state.sandColor = e.target.value; };
+        document.getElementById('sandSize').oninput = (e) => { state.sandSize = parseFloat(e.target.value); };
+
+        // Botón Random (Ahora aleatoriza A y B por separado)
+        document.getElementById('btnRandom').onclick = () => {
+            // Buscamos enteros o .5 para que salgan figuras bonitas
+            const rA = Math.floor(Math.random() * 10) + 1;
+            const rB = Math.floor(Math.random() * 10) + 1;
+            
+            state.freqA = rA;
+            state.freqB = rB;
+            
+            freqAInput.value = rA;
+            freqBInput.value = rB;
+            freqAVal.innerText = rA.toFixed(1);
+            freqBVal.innerText = rB.toFixed(1);
+            
+            wakeUpParticles();
+        };
+
+        document.getElementById('btnPng').onclick = () => saveImage('png');
+        document.getElementById('btnJpg').onclick = () => saveImage('jpeg');
+    }
+
+    function wakeUpParticles() {
+        for(let p of particles) {
+            p.vx += (Math.random()-0.5) * 5;
+            p.vy += (Math.random()-0.5) * 5;
+        }
+    }
+
+    function saveImage(format) {
+        if(format === 'jpeg') {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = width;
+            tempCanvas.height = height;
+            const tCtx = tempCanvas.getContext('2d');
+            tCtx.fillStyle = '#000000';
+            tCtx.fillRect(0,0, width, height);
+            tCtx.drawImage(canvas, 0, 0);
+            
+            const link = document.createElement('a');
+            link.download = `cimatica_interferencia.${format}`;
+            link.href = tempCanvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+        } else {
+            const link = document.createElement('a');
+            link.download = `cimatica_interferencia.${format}`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    }
+
+    init();
+
+</script>
+</body>
+</html>

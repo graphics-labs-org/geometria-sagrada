@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cubo de Metatrón - Geometría Sagrada TOP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Generador interactivo del Cubo de Metatrón. Explora el Fruto de la Vida, la Merkaba y la geometría sagrada que contiene los 5 sólidos platónicos.">
+    
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534" crossorigin="anonymous"></script>
+
+    <style>
+        /* ESTILO "CRYSTAL FORGE PRO" */
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            background-color: #000; 
+            font-family: 'Segoe UI', sans-serif; 
+            color: #ddd; 
+            overflow-x: hidden; 
+            overscroll-behavior: none; /* Evita rebote en mac/ios */
+        }
+        
+        #app-wrapper { 
+            display: flex; 
+            width: 100%; 
+            height: 100vh; 
+            overflow: hidden; 
+            position: relative;
+        }
+        
+        /* CANVAS AREA */
+        #canvas-container {
+            flex: 3; position: relative;
+            background: radial-gradient(circle at center, #1a0b2e 0%, #000 100%);
+            /* Cursores para indicar interactividad */
+            cursor: grab; 
+            overflow: hidden; 
+            touch-action: none; /* VITAL: Bloquea el scroll del navegador para permitir rotar/zoom */
+        }
+        #canvas-container:active {
+            cursor: grabbing;
+        }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* CONTROLES */
+        #controls-container {
+            flex: 2; min-width: 320px; background-color: #050505; padding: 25px;
+            overflow-y: auto; box-shadow: -5px 0 30px rgba(0,0,0,0.8); border-left: 1px solid #222; z-index: 10;
+        }
+
+        h2 { color: #9D00FF; margin: 0 0 15px 0; text-align: center; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 15px rgba(157, 0, 255, 0.4); }
+        
+        /* BOTONES DE EXPORTACIÓN */
+        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; }
+        .export-btn {
+            flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+            transition: transform 0.1s, filter 0.2s; font-size: 0.9em;
+        }
+        .export-btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
+        #btnPng { background-color: #9D00FF; color: #fff; } 
+        #btnJpg { background-color: #fff; color: #000; } 
+
+        /* GRUPOS DE CONTROL */
+        .control-group { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .control-row { display: flex; align-items: center; margin-bottom: 12px; font-size: 0.9em; justify-content: space-between; }
+        .control-label { color: #ccc; font-weight: 500; }
+        
+        input[type=range] { width: 50%; cursor: pointer; accent-color: #9D00FF; }
+        input[type=color] { border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; padding: 0; overflow: hidden; }
+        input[type=checkbox] { width: 18px; height: 18px; accent-color: #9D00FF; cursor: pointer; }
+
+        .btn-main {
+            width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 10px;
+            background: linear-gradient(45deg, #222, #333); color: #fff; border: 1px solid #444;
+            transition: all 0.3s;
+        }
+        .btn-main:hover { border-color: #9D00FF; color: #9D00FF; }
+        
+        .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .btn-preset { background: #1a1a1a; color: #aaa; border: 1px solid #333; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 0.8em; transition: 0.2s;}
+        .btn-preset:hover { background: #252525; color: #fff; border-color: #9D00FF; }
+        .btn-preset.active { background: rgba(157, 0, 255, 0.2); color: #fff; border-color: #9D00FF; box-shadow: 0 0 10px rgba(157,0,255,0.2); }
+
+        /* SECCIÓN DE CONTENIDO (TEXTO) */
+        .content-section { max-width: 900px; margin: 0 auto; padding: 60px 20px; background-color: #000; position: relative; z-index: 20; }
+        .ad-placeholder {
+            width: 100%; height: 120px; background: #0f0f0f; margin: 40px 0;
+            border: 1px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.8em;
+        }
+        article h2 { color: #9D00FF; border-left: 4px solid #9D00FF; padding-left: 15px; margin-top: 60px; font-size: 2em; letter-spacing: 1px;}
+        article h3 { color: #fff; margin-top: 40px; font-size: 1.5em; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        article p { margin-bottom: 20px; font-size: 1.1em; color: #ccc; line-height: 1.8; text-align: justify; }
+        article ul { list-style: none; padding: 0; }
+        article li { margin-bottom: 15px; padding-left: 20px; border-left: 2px solid #333; color: #bbb; }
+        article strong { color: #fff; }
+
+        footer { background-color: #050505; padding: 50px 20px; text-align: center; border-top: 1px solid #222; font-size: 0.9em; color: #666; position: relative; z-index: 20;}
+        footer a { color: #888; text-decoration: none; margin: 0 10px; transition: color 0.3s; }
+        footer a:hover { color: #9D00FF; }
+
+        /* RESPONSIVE */
+        @media (max-width: 800px) and (orientation: portrait) {
+            #app-wrapper { display: block; height: auto; }
+            #canvas-container { height: 55vh; border-bottom: 2px solid #9D00FF; } /* Un poco más de altura en móvil */
+            #controls-container { height: auto; }
+        }
+        
+        @media (max-width: 900px) and (orientation: landscape) {
+            #controls-container { padding: 15px; }
+            h2 { font-size: 1.2em; }
+            .control-group { padding: 10px; margin-bottom: 10px; }
+            .btn-group { margin-bottom: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-wrapper">
+    <div id="canvas-container">
+        <canvas id="metatronCanvas"></canvas>
+    </div>
+
+    <div id="controls-container">
+        <h2>Cubo de Metatrón</h2>
+        
+        <div class="btn-group">
+            <button id="btnPng" class="export-btn">💾 Guardar PNG</button>
+            <button id="btnJpg" class="export-btn">📸 Guardar JPG</button>
+        </div>
+
+        <button id="btnAnimate" class="btn-main" style="background: linear-gradient(45deg, #9D00FF, #5500AA); border:none;">✨ Re-Animar Construcción</button>
+
+        <div class="control-group">
+            <div class="control-row" style="margin-bottom:0;">
+                <span class="control-label">⚡ Velocidad Anim.</span>
+                <input type="range" id="animSpeed" min="0.2" max="20" step="0.1" value="2.0" title="Ajustar velocidad de dibujo">
+            </div>
+            <div style="text-align:right; font-size:0.75em; color:#777; margin-top:2px;">
+                Valor: <span id="speedVal">2.0</span>
+            </div>
+            
+            <div class="control-row" style="margin-bottom:0; margin-top:15px;">
+                <span class="control-label">🔄 Rotación</span>
+                <input type="range" id="rotation" min="0" max="360" value="0" title="Girar figura">
+            </div>
+            <div style="text-align:right; font-size:0.75em; color:#777; margin-top:2px;">
+                Grados: <span id="rotVal">0°</span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3 style="margin:0 0 10px 0; color:#fff; font-size:0.9em; border-bottom:1px solid #444; padding-bottom:5px;">Geometría Oculta (Presets)</h3>
+            <p style="font-size:0.75em; color:#888; margin-bottom:10px;">Selecciona una estructura para aislarla:</p>
+            <div class="preset-grid">
+                <button class="btn-preset active" onclick="setPreset('all')">Todo (Metatrón)</button>
+                <button class="btn-preset" onclick="setPreset('fruit')">Fruto de la Vida</button>
+                <button class="btn-preset" onclick="setPreset('merkaba')">Merkaba</button>
+                <button class="btn-preset" onclick="setPreset('cube')">Cubo</button>
+                <button class="btn-preset" onclick="setPreset('inner')">Núcleo</button>
+                <button class="btn-preset" onclick="setPreset('hexagon')">Hexágono</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3 style="margin:0 0 10px 0; color:#fff; font-size:0.9em; border-bottom:1px solid #444; padding-bottom:5px;">Capas y Ajustes</h3>
+            <div class="control-row">
+                <span class="control-label">Círculos (Fem)</span>
+                <input type="checkbox" id="checkCircles" checked>
+            </div>
+            <div class="control-row">
+                <span class="control-label">Líneas (Masc)</span>
+                <input type="checkbox" id="checkLines" checked>
+            </div>
+             <div class="control-row">
+                <span class="control-label">Grosor Línea</span>
+                <input type="range" id="lineWidth" min="0.5" max="5" step="0.5" value="1">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3 style="margin:0 0 10px 0; color:#fff; font-size:0.9em; border-bottom:1px solid #444; padding-bottom:5px;">Colores</h3>
+            <div class="control-row">
+                <span class="control-label">Líneas</span>
+                <input type="color" id="colorLines" value="#FFD700">
+            </div>
+            <div class="control-row">
+                <span class="control-label">Círculos</span>
+                <input type="color" id="colorCircles" value="#9D00FF">
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top:20px;">
+            <a href="../index.html" style="color:#9D00FF; text-decoration:none; font-weight:bold; font-size:0.9em;">← Volver al Hub Central</a>
+        </div>
+    </div>
+</div>
+
+<section class="content-section">
+    <div class="ad-placeholder">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_metatron_cube -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="1341978158"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </div>
+
+    <article>
+        <h2>¿Qué es el Cubo de Metatrón?</h2>
+        <p>El <strong>Cubo de Metatrón</strong> es considerado una de las figuras más potentes y complejas de la Geometría Sagrada. No es solo un dibujo atractivo; es un mapa de información que explica cómo la energía del Creador fluye a través de la materia.</p>
+        <p>Recibe su nombre del Arcángel Metatrón, quien en la mística judía y la Cábala es el escriba de Dios y el guardián de los registros akáshicos. Se dice que esta figura actúa como un plano divino para la construcción de todo lo que existe en el universo físico.</p>
+
+        <h3>El Origen: Del Círculo a la Línea</h3>
+        <p>Esta figura no nace de la nada. Comienza con el <strong>Fruto de la Vida</strong> (que puedes aislar en nuestro generador pulsando el botón correspondiente). El Fruto se compone de 13 círculos tangentes.</p>
+        <p>La magia ocurre cuando aplicamos la <strong>energía masculina</strong> (líneas rectas) sobre la <strong>energía femenina</strong> (círculos curvos). Si conectas el centro de cada uno de los 13 círculos con los centros de todos los demás, obtienes 78 líneas exactas. Esa red de conexiones es el Cubo de Metatrón.</p>
+
+        <h3>¿Por qué se llama "Cubo" si parece un hexágono?</h3>
+        <p>Esta es la duda más común. La figura que ves es una <strong>proyección isométrica</strong> (2D) de un cubo tridimensional.</p>
+        <p>Si tomas un cubo físico (un dado, por ejemplo) y lo giras hasta que una de sus esquinas apunte directamente a tu ojo, su contorno dejará de verse como un cuadrado y se convertirá en un hexágono perfecto. Nuestro generador te permite ver estas líneas internas que forman el "Cubo dentro del Cubo" o Teseracto.</p>
+
+        <h3>El Secreto Contenido: Los 5 Sólidos Platónicos</h3>
+        <p>Lo más fascinante de esta estructura es que, al borrar líneas específicas, aparecen visualmente los cinco Sólidos Platónicos anidados, que son los bloques constructores de la materia:</p>
+        <ul>
+            <li><strong>El Hexaedro (Cubo):</strong> Tierra, estabilidad.</li>
+            <li><strong>El Tetraedro:</strong> Fuego, manifestación.</li>
+            <li><strong>El Octaedro:</strong> Aire, equilibrio mental.</li>
+            <li><strong>El Icosaedro:</strong> Agua, fluidez emocional.</li>
+            <li><strong>El Dodecaedro:</strong> Éter, espíritu.</li>
+        </ul>
+
+        <h3>La Merkaba y la Protección</h3>
+        <p>Uno de los filtros más importantes de esta herramienta es la <strong>Merkaba</strong> (Estrella Tetraédrica). Esta figura está formada por dos tetraedros entrelazados (uno apuntando al cielo, otro a la tierra). Es el símbolo del equilibrio perfecto entre lo divino y lo terrenal, y se considera el "vehículo de luz" para la ascensión de la conciencia.</p>
+
+        <h3>¿Para qué sirve meditar con esta forma?</h3>
+        <p>Utilizar nuestro generador animado para observar la construcción del Cubo de Metatrón puede ayudarte a:</p>
+        <ul>
+            <li>Equilibrar los hemisferios cerebrales (lógica de líneas vs intuición de círculos).</li>
+            <li>Limpiar energías densas o estancadas en tu campo personal.</li>
+            <li>Entender el orden subyacente en situaciones de caos aparente.</li>
+            <li>Conectar con la vibración de la creación universal.</li>
+        </ul>
+    </article>
+
+    <div class="ad-placeholder">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_metatron_cube -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="1341978158"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </div>
+</section>
+
+<footer>
+    <div style="margin-bottom: 30px;">
+        <p style="margin-bottom: 10px; color: #aaa;">¿Te ha fascinado la geometría?</p>
+        <a href="https://www.paypal.com/paypalme/pbazan" target="_blank" style="display: inline-block; background-color: #0070BA; color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(0,112,186, 0.3);">☕ Invítame a un café</a>
+    </div>
+    <p>&copy; 2025 Geometría Sagrada Top.</p>
+    <br>
+    <a href="../legal.html#privacidad">Política de Privacidad</a> | <a href="../legal.html#terminos">Términos</a> | <a href="mailto:geometriasagradatop@gmail.com">Contacto</a>
+</footer>
+
+<script>
+    const canvas = document.getElementById('metatronCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // VARIABLES PARA INTERACCIÓN
+    let isDragging = false;
+    let lastMouseX = 0;
+    let initialPinchDist = null;
+    let initialBaseRadius = null;
+
+    // Configuración del Estado
+    const state = {
+        circles: true,
+        lines: true,
+        lineWidth: 1,
+        lineColor: '#FFD700',
+        circleColor: '#9D00FF',
+        filter: 'all', 
+        animationProgress: 1,
+        isAnimating: false,
+        animSpeed: 2.0,
+        rotation: 0 
+    };
+
+    let points = []; 
+    let connections = []; 
+    let baseRadius = 0; 
+
+    function init() {
+        resize();
+        window.addEventListener('resize', resize);
+        setupControls();
+        addInteractionListeners(); // Activamos el touch/mouse
+        generatePoints();
+        generateConnections();
+        draw();
+    }
+
+    function resize() {
+        const parent = canvas.parentElement;
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight;
+        const minDim = Math.min(canvas.width, canvas.height);
+        // Si ya tenemos un radio (por zoom), intentamos mantener la proporción, si no, inicial
+        if(baseRadius === 0) {
+            baseRadius = minDim / 10; 
+        } else {
+            // Ajuste simple al redimensionar para que no se pierda
+            // Opcional: reiniciar radio si se cambia mucho la ventana
+        }
+        generatePoints(); 
+        draw();
+    }
+
+    function addInteractionListeners() {
+        // --- RATÓN (PC) ---
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            lastMouseX = e.clientX;
+        });
+
+        window.addEventListener('mouseup', () => { isDragging = false; });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const deltaX = e.clientX - lastMouseX;
+            lastMouseX = e.clientX;
+            
+            // Ajustar sensibilidad: 1 pixel = 0.5 grados
+            state.rotation = (state.rotation + deltaX * 0.5) % 360;
+            if (state.rotation < 0) state.rotation += 360;
+            
+            // Actualizar UI
+            updateRotationUI();
+            generatePoints();
+            draw();
+        });
+
+        // Zoom con Rueda
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomSpeed = 0.05;
+            if (e.deltaY < 0) {
+                baseRadius *= (1 + zoomSpeed); // Zoom In
+            } else {
+                baseRadius *= (1 - zoomSpeed); // Zoom Out
+            }
+            // Límites de seguridad para el radio
+            if (baseRadius < 10) baseRadius = 10;
+            if (baseRadius > canvas.width) baseRadius = canvas.width;
+
+            generatePoints();
+            draw();
+        }, { passive: false });
+
+
+        // --- TÁCTIL (MÓVIL) ---
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                // Inicio de rotación con 1 dedo
+                isDragging = true;
+                lastMouseX = e.touches[0].clientX;
+            } else if (e.touches.length === 2) {
+                // Inicio de Pinch Zoom
+                isDragging = false; // Desactivar rotación si hacemos pinch
+                initialPinchDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                initialBaseRadius = baseRadius;
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Evitar scroll de pantalla
+            
+            if (e.touches.length === 1 && isDragging) {
+                // Rotar
+                const deltaX = e.touches[0].clientX - lastMouseX;
+                lastMouseX = e.touches[0].clientX;
+                
+                state.rotation = (state.rotation + deltaX * 0.5) % 360;
+                if (state.rotation < 0) state.rotation += 360;
+                
+                updateRotationUI();
+                generatePoints();
+                draw();
+
+            } else if (e.touches.length === 2) {
+                // Zoom Pinch
+                const currentDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+
+                if (initialPinchDist > 0) {
+                    const scale = currentDist / initialPinchDist;
+                    baseRadius = initialBaseRadius * scale;
+                    
+                    // Límites
+                    if (baseRadius < 10) baseRadius = 10;
+                    if (baseRadius > canvas.width) baseRadius = canvas.width;
+                    
+                    generatePoints();
+                    draw();
+                }
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            isDragging = false;
+            initialPinchDist = null;
+        });
+    }
+
+    function updateRotationUI() {
+        const rotInt = Math.round(state.rotation);
+        document.getElementById('rotation').value = rotInt;
+        document.getElementById('rotVal').innerText = rotInt + '°';
+    }
+
+    function generatePoints() {
+        points = [];
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        
+        const rotRad = state.rotation * Math.PI / 180;
+
+        points.push({x: cx, y: cy});
+
+        const dist1 = baseRadius * 2;
+        for(let i = 0; i < 6; i++) {
+            const angle = ((i * 60) * Math.PI / 180) + rotRad; 
+            points.push({
+                x: cx + Math.cos(angle) * dist1,
+                y: cy + Math.sin(angle) * dist1
+            });
+        }
+
+        const dist2 = baseRadius * 4;
+        for(let i = 0; i < 6; i++) {
+            const angle = ((i * 60) * Math.PI / 180) + rotRad;
+            points.push({
+                x: cx + Math.cos(angle) * dist2,
+                y: cy + Math.sin(angle) * dist2
+            });
+        }
+    }
+
+    function generateConnections() {
+        connections = [];
+        const total = points.length;
+        for (let i = 0; i < total; i++) {
+            for (let j = i + 1; j < total; j++) {
+                connections.push({from: i, to: j});
+            }
+        }
+    }
+
+    function draw() {
+        if (state.isAnimating) {
+            ctx.fillStyle = 'rgba(0,0,0,0.15)'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.shadowBlur = 0;
+        ctx.shadowColor = 'transparent';
+        ctx.globalCompositeOperation = 'source-over';
+
+        let linesToDraw = [];
+        if (state.lines) {
+            if (state.filter === 'all') {
+                linesToDraw = connections;
+            } else if (state.filter === 'merkaba') {
+                const group1 = [7,9,11]; 
+                const group2 = [8,10,12]; 
+                connections.forEach(l => {
+                    const inG1 = group1.includes(l.from) && group1.includes(l.to);
+                    const inG2 = group2.includes(l.from) && group2.includes(l.to);
+                    if(inG1 || inG2) linesToDraw.push(l);
+                    if( (group1.includes(l.from) || group2.includes(l.from)) && (l.to >=1 && l.to <=6)) linesToDraw.push(l);
+                });
+            } else if (state.filter === 'cube') {
+                connections.forEach(l => {
+                   if(l.from >= 7 && l.to >= 7 && (Math.abs(l.to - l.from) === 1 || Math.abs(l.to - l.from) === 5)) linesToDraw.push(l); 
+                   if(l.from >= 1 && l.from <= 6 && l.to >= 1 && l.to <= 6 && (Math.abs(l.to - l.from) === 1 || Math.abs(l.to - l.from) === 5)) linesToDraw.push(l);
+                   if(l.from >=1 && l.from <=6 && l.to >=7 && (l.to - l.from === 6)) linesToDraw.push(l); 
+                });
+            } else if (state.filter === 'hexagon') {
+                 connections.forEach(l => {
+                   if(l.from >= 7 && l.to >= 7 && (Math.abs(l.to - l.from) === 1 || Math.abs(l.to - l.from) === 5)) linesToDraw.push(l); 
+                 });
+            } else if (state.filter === 'inner') {
+                 connections.forEach(l => {
+                   if(l.from === 0 && l.to <= 6) linesToDraw.push(l); 
+                 });
+            }
+
+            ctx.lineWidth = state.lineWidth;
+            ctx.strokeStyle = state.lineColor;
+            ctx.beginPath();
+            
+            let limit = state.isAnimating ? Math.floor(linesToDraw.length * state.animationProgress) : linesToDraw.length;
+            if (limit > linesToDraw.length) limit = linesToDraw.length;
+            
+            for(let i=0; i<limit; i++) {
+                const line = linesToDraw[i];
+                if(line) {
+                    const p1 = points[line.from];
+                    const p2 = points[line.to];
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                }
+            }
+            ctx.stroke();
+        }
+
+        if (state.circles) {
+            ctx.strokeStyle = state.circleColor;
+            ctx.lineWidth = 2;
+
+            let circlesLimit = points.length;
+            if (state.isAnimating && !state.lines) {
+                circlesLimit = Math.floor(points.length * state.animationProgress);
+                if (circlesLimit > points.length) circlesLimit = points.length;
+            }
+
+            for(let i=0; i<circlesLimit; i++) {
+                const p = points[i];
+                if(p) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, baseRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = hexToRgba(state.circleColor, 0.1);
+                    ctx.fill();
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+
+    function animateConstruction() {
+        state.isAnimating = true;
+        state.animationProgress = 0;
+        
+        function loop() {
+            const increment = state.animSpeed / 100;
+            
+            if (state.animationProgress < 1.05) { 
+                state.animationProgress += increment;
+                draw();
+                if(state.isAnimating) requestAnimationFrame(loop);
+            } else {
+                state.isAnimating = false;
+                state.animationProgress = 1;
+                draw(); 
+            }
+        }
+        loop();
+    }
+
+    function saveImage(format) {
+        if(format === 'jpeg') {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const tCtx = tempCanvas.getContext('2d');
+            tCtx.fillStyle = '#000000';
+            tCtx.fillRect(0,0, tempCanvas.width, tempCanvas.height);
+            tCtx.drawImage(canvas, 0, 0);
+            
+            const link = document.createElement('a');
+            link.download = `cubo_metatron.${format}`;
+            link.href = tempCanvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+        } else {
+            const link = document.createElement('a');
+            link.download = `cubo_metatron.${format}`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    }
+
+    function hexToRgba(hex, alpha) {
+        let r = parseInt(hex.slice(1, 3), 16),
+            g = parseInt(hex.slice(3, 5), 16),
+            b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r},${g},${b},${alpha})`;
+    }
+
+    function setupControls() {
+        document.getElementById('checkCircles').onchange = (e) => { state.circles = e.target.checked; draw(); };
+        document.getElementById('checkLines').onchange = (e) => { state.lines = e.target.checked; draw(); };
+        document.getElementById('lineWidth').oninput = (e) => { state.lineWidth = parseFloat(e.target.value); draw(); };
+        document.getElementById('colorLines').oninput = (e) => { state.lineColor = e.target.value; draw(); };
+        document.getElementById('colorCircles').oninput = (e) => { state.circleColor = e.target.value; draw(); };
+        
+        document.getElementById('animSpeed').oninput = (e) => { 
+            state.animSpeed = parseFloat(e.target.value); 
+            document.getElementById('speedVal').innerText = state.animSpeed.toFixed(1);
+        };
+
+        // Listener de Rotación (input manual)
+        document.getElementById('rotation').oninput = (e) => { 
+            state.rotation = parseInt(e.target.value); 
+            document.getElementById('rotVal').innerText = state.rotation + '°';
+            generatePoints(); 
+            draw(); 
+        };
+        
+        document.getElementById('btnAnimate').onclick = () => animateConstruction();
+        
+        document.getElementById('btnPng').onclick = () => saveImage('png');
+        document.getElementById('btnJpg').onclick = () => saveImage('jpeg');
+    }
+
+    window.setPreset = (mode) => {
+        state.filter = mode;
+        document.querySelectorAll('.btn-preset').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        if(mode === 'fruit') { 
+            state.lines = false; 
+            state.circles = true; 
+        } else { 
+            state.lines = true; 
+        }
+        
+        document.getElementById('checkLines').checked = state.lines;
+        document.getElementById('checkCircles').checked = state.circles;
+        
+        animateConstruction(); 
+    };
+
+    init();
+</script>
+</body>
+</html>

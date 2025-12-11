@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mandalas a Mano - Geometría Sagrada TOP</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Herramienta de dibujo de Mandalas a mano alzada con estabilizador. Crea arte zen con simetría radial, espejos y colores neón.">
+    
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if(event.keyCode == 123) return false;
+            // Permitir Ctrl+Z y Ctrl+Y
+            if(e.ctrlKey && (e.key === 'z' || e.key === 'y' || e.key === 'Z')) return true;
+            if(e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) return false;
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
+        }
+    </script>
+
+    <style>
+        /* ESTILO GENERAL "NEON ZEN" */
+        body { margin: 0; background-color: #050505; font-family: 'Segoe UI', sans-serif; color: #ddd; overflow-x: hidden; display: flex; flex-direction: column; }
+        
+        /* Layout de la App */
+        #app-wrapper { display: flex; width: 100%; height: 100vh; border-bottom: 2px solid #222; }
+        
+        #canvas-container {
+            flex: 3; display: flex; justify-content: center; align-items: center;
+            background-color: #000; padding: 20px; overflow: hidden; position: relative;
+            cursor: crosshair; 
+        }
+        
+        canvas { 
+            box-shadow: 0 0 50px rgba(255, 0, 150, 0.1); 
+            border-radius: 50%; 
+            background-color: #000;
+            touch-action: none; 
+        }
+        
+        #controls-container {
+            flex: 2; min-width: 340px; background-color: #111; padding: 20px;
+            overflow-y: auto; box-shadow: -5px 0 20px rgba(0,0,0,0.5); border-left: 1px solid #222;
+        }
+
+        h2 { color: #FF0099; margin-bottom: 20px; text-align: center; letter-spacing: 2px; text-shadow: 0 0 15px rgba(255, 0, 150, 0.4); text-transform: uppercase; }
+        
+        /* Botones */
+        .btn-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        
+        .action-btn {
+            flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+            transition: all 0.2s; color: #fff; text-transform: uppercase; font-size: 0.75em;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .action-btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
+        .action-btn:active { transform: translateY(0); }
+        .action-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+        #btnUndo { background-color: #444; border: 1px solid #666; }
+        #btnRedo { background-color: #444; border: 1px solid #666; }
+        #btnClear { background-color: #d32f2f; }
+        #btnPng { background-color: #FF0099; color: #fff; } 
+        #btnJpg { background-color: #fff; color: #000; } 
+
+        /* Controles Deslizantes */
+        .control-group { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 18px; }
+        .control-row { display: flex; align-items: center; margin-bottom: 12px; font-size: 0.9em; }
+        .control-label { flex: 1; color: #ccc; font-weight: 500; }
+        
+        input[type=range] { flex-grow: 2; cursor: pointer; margin-right: 10px; accent-color: #FF0099; }
+        input[type=color] { border: none; width: 40px; height: 30px; border-radius: 4px; cursor: pointer; padding: 0; }
+        input[type=checkbox] { transform: scale(1.3); accent-color: #FF0099; cursor: pointer; }
+
+        .value-display { width: 35px; text-align: center; font-family: monospace; font-weight: bold; color: #fff; }
+
+        /* Sección de Contenido (Texto) */
+        .content-section { max-width: 900px; margin: 0 auto; padding: 60px 20px; }
+        
+        .ad-placeholder {
+            width: 100%; height: 120px; background: #0f0f0f; margin: 40px 0;
+            border: 1px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.8em;
+        }
+        
+        article h2 { color: #FF0099; border-left: 4px solid #FF0099; padding-left: 15px; margin-top: 50px; font-size: 1.8em;}
+        article h3 { color: #eee; margin-top: 30px; font-size: 1.4em; }
+        article p { margin-bottom: 20px; font-size: 1.1em; color: #ccc; line-height: 1.8; text-align: justify; }
+        article ul { color: #ccc; line-height: 1.6; margin-bottom: 30px;}
+        article li { margin-bottom: 10px; }
+        article strong { color: #fff; }
+
+        /* Tablas */
+        table { width:100%; border-collapse: collapse; margin-top:20px; margin-bottom:30px; color:#ccc; }
+        th { text-align:left; padding:10px; color:#FF0099; border-bottom:1px solid #444; }
+        td { padding:10px; border-bottom:1px solid #222; }
+
+        footer { background-color: #000; padding: 50px 20px; text-align: center; border-top: 1px solid #222; font-size: 0.9em; color: #666; }
+        footer a { color: #888; text-decoration: none; margin: 0 10px; }
+        footer a:hover { color: #FF0099; }
+
+        @media (max-width: 800px) {
+            #app-wrapper { flex-direction: column; height: auto; }
+            #canvas-container { height: 55vh; }
+            #controls-container { height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-wrapper">
+    <div id="canvas-container">
+        <canvas id="mandalaCanvas"></canvas>
+    </div>
+
+    <div id="controls-container">
+        <h2>MANDALAS A MANO</h2>
+        
+        <div class="btn-group">
+            <button id="btnUndo" class="action-btn" title="Ctrl+Z">↩ Deshacer</button>
+            <button id="btnRedo" class="action-btn" title="Ctrl+Y">↪ Rehacer</button>
+            <button id="btnClear" class="action-btn">🗑️ Borrar</button>
+        </div>
+
+        <div class="btn-group" style="margin-bottom: 25px;">
+            <button id="btnPng" class="action-btn">💾 Guardar PNG</button>
+            <button id="btnJpg" class="action-btn">📸 Guardar JPG</button>
+        </div>
+
+        <div id="sliders-dock">
+            
+            <div class="control-group">
+                <h3 style="margin-top:0; color:#eee; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Simetría Sagrada</h3>
+                <div class="control-row">
+                    <span class="control-label">Ejes:</span>
+                    <input type="range" id="symmetryRange" min="2" max="36" value="12">
+                    <span id="symmetryVal" class="value-display">12</span>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Modo Espejo:</span>
+                    <input type="checkbox" id="checkMirror" checked>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3 style="margin-top:0; color:#eee; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Pincel de Luz</h3>
+                <div class="control-row">
+                    <span class="control-label">Color:</span>
+                    <input type="color" id="brushColor" value="#FF0099">
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Grosor:</span>
+                    <input type="range" id="sizeRange" min="1" max="50" value="2">
+                    <span id="sizeVal" class="value-display">2</span>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Glow:</span>
+                    <input type="range" id="glowRange" min="0" max="30" value="10">
+                </div>
+                <div class="control-row" style="border-top: 1px solid #333; padding-top:10px; margin-top:5px;">
+                    <span class="control-label" style="color:#FF0099;">Estabilizador:</span>
+                    <input type="range" id="smoothRange" min="0" max="95" value="60">
+                    <span id="smoothVal" class="value-display">60%</span>
+                </div>
+                <p style="font-size:0.75em; color:#888; margin:0; text-align:right;">(Más alto = Línea más lenta y suave)</p>
+            </div>
+
+            <div class="control-group">
+                <h3 style="margin-top:0; color:#eee; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Lienzo</h3>
+                <div class="control-row">
+                    <span class="control-label">Fondo:</span>
+                    <input type="color" id="bgColor" value="#000000">
+                </div>
+            </div>
+
+        </div>
+        
+        <div style="text-align:center; margin-top:20px;">
+            <a href="../index.html" style="color:#FF0099; text-decoration:none; font-weight:bold;">← Volver al Hub Central</a>
+        </div>
+    </div>
+</div>
+
+<section class="content-section">
+    <div class="ad-placeholder">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_mandala_mano -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="3076418572"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </div>
+
+    <article>
+        <h2>El Círculo Sagrado: Historia y Significado</h2>
+        <p>La palabra <strong>Mandala</strong> proviene del sánscrito clásico y significa literalmente "Círculo" o "Disco". Aunque hoy los asociamos con dibujos relajantes, su origen es profundamente espiritual y ancestral. Un mandala no es solo un dibujo; es un <strong>cosmograma</strong>: un mapa del universo y de la psique humana.</p>
+        
+        <h3>Un Viaje a través del Tiempo y la Geografía</h3>
+        <p>Aunque los mandalas nacieron en el corazón de la India dentro de las tradiciones <strong>hinduistas y budistas (Tantra)</strong> hace más de 2.000 años, la geometría radial es un arquetipo universal que aparece en todas las culturas:</p>
+        <ul>
+            <li><strong>Tíbet:</strong> Los monjes crean intrincados mandalas de arena coloreada grano a grano durante semanas, para luego destruirlos en un instante, simbolizando la impermanencia de la vida.</li>
+            <li><strong>Cristianismo Medieval:</strong> Los rosetones de las catedrales góticas son mandalas de luz que representan la armonía divina.</li>
+            <li><strong>Cultura Azteca:</strong> La famosa "Piedra del Sol" es un mandala calendario que explica la cosmología mesoamericana.</li>
+            <li><strong>Celtas:</strong> Sus nudos eternos y cruces anilladas siguen la misma lógica de centro y expansión.</li>
+        </ul>
+
+        <div class="ad-placeholder">
+             <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_mandala_mano -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="3076418572"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        </div>
+
+        <h2>Beneficios Psicológicos: La "Curación por el Centro"</h2>
+        <p>Fue el famoso psicoanalista suizo <strong>Carl Gustav Jung</strong> quien introdujo el mandala en la psicología occidental. Jung descubrió que cuando sus pacientes dibujaban círculos, estaban intentando instintivamente ordenar su caos interior.</p>
+        <p>Utilizar nuestro <strong>Mandala Creator</strong> te aporta beneficios inmediatos:</p>
+        <ul>
+            <li><strong>Sincronización Cerebral:</strong> La estructura geométrica activa el hemisferio izquierdo (lógica), mientras que el color y el flujo activan el derecho (creatividad).</li>
+            <li><strong>Estado de Flujo (Flow):</strong> Al ver cómo el trazo se multiplica en tiempo real, tu mente entra en un estado hipnótico que silencia el diálogo interno y la ansiedad.</li>
+            <li><strong>Centramiento:</strong> Todo mandala tiene un punto central (Bindu). Dibujar alrededor de él ayuda a la psique a encontrar su propio eje en momentos de estrés.</li>
+        </ul>
+
+        <h3>Significado de las Formas y Colores</h3>
+        <p>Cuando dibujes, observa qué patrones surgen naturalmente de tu mano, ya que pueden revelar tu estado emocional:</p>
+        
+        <table>
+            <tr>
+                <th>Elemento</th>
+                <th>Significado Arquetípico</th>
+            </tr>
+            <tr>
+                <td><strong>Círculo</strong></td>
+                <td>La totalidad, lo absoluto, el "Yo" verdadero, protección.</td>
+            </tr>
+            <tr>
+                <td><strong>Cuadrado</strong></td>
+                <td>Estabilidad, equilibrio, la tierra y el mundo material.</td>
+            </tr>
+            <tr>
+                <td><strong>Triángulo</strong></td>
+                <td>Hacia arriba: aspiración, fuego. Hacia abajo: agua, inconsciente.</td>
+            </tr>
+            <tr>
+                <td><strong>Espiral</strong></td>
+                <td>Crecimiento, evolución y energía vital.</td>
+            </tr>
+        </table>
+
+        <p><strong>Guía rápida de color:</strong></p>
+        <ul style="columns: 2; -webkit-columns: 2; -moz-columns: 2;">
+            <li>🔴 <strong>Rojo:</strong> Pasión, energía, raíz.</li>
+            <li>🟠 <strong>Naranja:</strong> Creatividad, transformación.</li>
+            <li>🟡 <strong>Amarillo:</strong> Luz, sabiduría, alegría.</li>
+            <li>🟢 <strong>Verde:</strong> Sanación, naturaleza, amor.</li>
+            <li>🔵 <strong>Azul:</strong> Paz, calma, infinito.</li>
+            <li>🟣 <strong>Violeta:</strong> Espiritualidad, magia.</li>
+            <li>⚪ <strong>Blanco:</strong> Pureza, iluminación.</li>
+            <li>⚫ <strong>Negro:</strong> Misterio, profundidad, el vacío fértil.</li>
+        </ul>
+
+        <div class="ad-placeholder">
+             <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_mandala_mano -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="3076418572"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        </div>
+    </article>
+</section>
+
+<footer>
+    <div style="margin-bottom: 30px;">
+        <p style="margin-bottom: 10px; color: #aaa;">¿Te ha relajado esta herramienta?</p>
+        <a href="https://www.paypal.com/paypalme/pbazan" target="_blank" style="
+            display: inline-block; background-color: #0070BA; color: white; padding: 10px 20px;
+            border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9em;
+            box-shadow: 0 4px 15px rgba(0,112,186, 0.3); transition: transform 0.2s;
+        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            ☕ Invítame a un café (PayPal)
+        </a>
+    </div>
+
+    <p>&copy; 2025 Geometría Sagrada Top.</p>
+    <br>
+    <a href="../legal.html#privacidad">Política de Privacidad</a>
+    <a href="../legal.html#terminos">Términos</a>
+    <a href="../legal.html#cookies">Cookies</a>
+    <a href="mailto:geometriasagradatop@gmail.com">Contacto</a>
+</footer>
+
+<script>
+    const canvas = document.getElementById('mandalaCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvas-container');
+
+    // ESTADO
+    let state = {
+        isMouseDown: false,
+        symmetry: 12,
+        mirror: true,
+        smoothFactor: 0.6, // Factor interno 0-1
+        color: '#FF0099',
+        bgColor: '#000000',
+        size: 2,
+        glow: 10
+    };
+
+    // COORDENADAS LAZY BRUSH
+    let pointer = { x: 0, y: 0 }; 
+    let brush = { x: 0, y: 0 };
+    
+    let history = [];
+    let redoStack = [];
+    const MAX_HISTORY = 30;
+    let cx, cy;
+
+    function init() {
+        resizeCanvas();
+        setupListeners();
+        drawLoop(); // Iniciar animación
+        saveState(); // Guardar estado inicial
+    }
+
+    function resizeCanvas() {
+        if (!container) return;
+        const size = Math.min(container.offsetWidth, container.offsetHeight) * 0.95;
+        
+        if (canvas.width !== size) {
+            let tempImg = null;
+            if (history.length > 0) {
+                tempImg = new Image();
+                tempImg.src = canvas.toDataURL();
+            }
+
+            canvas.width = size;
+            canvas.height = size;
+            cx = size / 2;
+            cy = size / 2;
+            
+            pointer.x = cx; pointer.y = cy;
+            brush.x = cx; brush.y = cy;
+
+            ctx.fillStyle = state.bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (tempImg) {
+                tempImg.onload = () => ctx.drawImage(tempImg, 0, 0, size, size);
+            }
+        }
+    }
+    window.addEventListener('resize', () => setTimeout(resizeCanvas, 100));
+
+    // --- BUCLE DE DIBUJO ---
+    function drawLoop() {
+        if (state.isMouseDown) {
+            const dx = pointer.x - brush.x;
+            const dy = pointer.y - brush.y;
+            
+            if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+                // Velocidad inversa al smoothFactor
+                // Si smooth es 0.9 (90%), speed es 0.1 (lento)
+                const speed = 1 - state.smoothFactor; 
+                
+                const newX = brush.x + dx * speed;
+                const newY = brush.y + dy * speed;
+                
+                drawSymmetry(brush.x, brush.y, newX, newY);
+                
+                brush.x = newX;
+                brush.y = newY;
+            }
+        }
+        requestAnimationFrame(drawLoop);
+    }
+
+    function drawSymmetry(x1, y1, x2, y2) {
+        ctx.lineWidth = state.size;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = state.color;
+        ctx.shadowBlur = state.glow;
+        ctx.shadowColor = state.color;
+
+        const angleStep = (Math.PI * 2) / state.symmetry;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+
+        for (let i = 0; i < state.symmetry; i++) {
+            ctx.rotate(angleStep);
+            drawStroke(x1 - cx, y1 - cy, x2 - cx, y2 - cy);
+
+            if (state.mirror) {
+                ctx.save();
+                ctx.scale(1, -1);
+                drawStroke(x1 - cx, y1 - cy, x2 - cx, y2 - cy);
+                ctx.restore();
+            }
+        }
+        ctx.restore();
+    }
+
+    function drawStroke(x1, y1, x2, y2) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+    }
+
+    // --- EVENTOS DE PUNTERO ---
+    function updatePointer(e) {
+        const rect = canvas.getBoundingClientRect();
+        let clientX, clientY;
+        
+        if(e.type.includes('touch')) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+            e.preventDefault();
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        
+        pointer.x = clientX - rect.left;
+        pointer.y = clientY - rect.top;
+    }
+
+    function startPosition(e) {
+        state.isMouseDown = true;
+        saveState();
+        redoStack = [];
+        updateButtons();
+        updatePointer(e);
+        brush.x = pointer.x; // Teletransportar pincel al inicio
+        brush.y = pointer.y;
+    }
+
+    function endPosition() {
+        state.isMouseDown = false;
+        ctx.beginPath();
+    }
+
+    // --- HISTORIAL ---
+    function saveState() {
+        if (history.length >= MAX_HISTORY) history.shift();
+        history.push(canvas.toDataURL());
+    }
+
+    function undo() {
+        if (history.length > 0) {
+            redoStack.push(canvas.toDataURL());
+            const previousState = history.pop();
+            restoreState(previousState);
+            updateButtons();
+        } else {
+            clearCanvas(true);
+        }
+    }
+
+    function redo() {
+        if (redoStack.length > 0) {
+            history.push(canvas.toDataURL());
+            const nextState = redoStack.pop();
+            restoreState(nextState);
+            updateButtons();
+        }
+    }
+
+    function restoreState(dataUrl) {
+        if(!dataUrl) { clearCanvas(true); return; }
+        const img = new Image();
+        img.src = dataUrl;
+        img.onload = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+        };
+    }
+
+    function clearCanvas(noSave) {
+        if(!noSave) { saveState(); redoStack = []; }
+        ctx.fillStyle = state.bgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        updateButtons();
+    }
+
+    function updateButtons() {
+        document.getElementById('btnUndo').disabled = history.length === 0;
+        document.getElementById('btnRedo').disabled = redoStack.length === 0;
+        document.getElementById('btnUndo').style.opacity = history.length === 0 ? 0.3 : 1;
+        document.getElementById('btnRedo').style.opacity = redoStack.length === 0 ? 0.3 : 1;
+    }
+
+    function setupListeners() {
+        canvas.addEventListener('mousedown', startPosition);
+        window.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', updatePointer);
+
+        canvas.addEventListener('touchstart', startPosition, {passive: false});
+        window.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', updatePointer, {passive: false});
+
+        document.getElementById('symmetryRange').addEventListener('input', (e) => { 
+            state.symmetry = parseInt(e.target.value); 
+            document.getElementById('symmetryVal').innerText = state.symmetry;
+        });
+        document.getElementById('checkMirror').addEventListener('change', (e) => state.mirror = e.target.checked);
+        
+        // Slider Estabilizador (0-95 -> 0.0-0.95)
+        document.getElementById('smoothRange').addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            state.smoothFactor = val / 100;
+            document.getElementById('smoothVal').innerText = val + '%';
+        });
+        
+        document.getElementById('brushColor').addEventListener('input', (e) => state.color = e.target.value);
+        document.getElementById('bgColor').addEventListener('input', (e) => {
+            if(confirm("Cambiar el fondo borrará el dibujo actual. ¿Continuar?")) {
+                state.bgColor = e.target.value;
+                clearCanvas(); history = []; redoStack = []; updateButtons();
+            }
+        });
+
+        document.getElementById('sizeRange').addEventListener('input', (e) => {
+            state.size = parseInt(e.target.value);
+            document.getElementById('sizeVal').innerText = state.size;
+        });
+        document.getElementById('glowRange').addEventListener('input', (e) => state.glow = parseInt(e.target.value));
+
+        document.getElementById('btnUndo').addEventListener('click', undo);
+        document.getElementById('btnRedo').addEventListener('click', redo);
+        document.getElementById('btnClear').addEventListener('click', () => {
+            if(confirm("¿Borrar todo?")) clearCanvas();
+        });
+        
+        document.getElementById('btnPng').addEventListener('click', () => download('png'));
+        document.getElementById('btnJpg').addEventListener('click', () => download('jpeg'));
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); undo(); }
+            if (e.ctrlKey && (e.key === 'y' || e.key === 'Y')) { e.preventDefault(); redo(); }
+        });
+        
+        updateButtons();
+    }
+
+    function download(ext) {
+        const link = document.createElement('a');
+        link.download = `mandala_${Date.now()}.${ext}`;
+        link.href = canvas.toDataURL('image/' + ext, 0.9);
+        link.click();
+    }
+
+    init();
+</script>
+</body>
+</html>

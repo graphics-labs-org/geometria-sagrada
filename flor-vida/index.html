@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Flor de la Vida Lab - Geometría Sagrada TOP</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Generador interactivo de la Flor de la Vida. Explora la Semilla, el Huevo y el Fruto de la Vida. Descubre la conexión con el Árbol de la Vida.">
+    
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if(event.keyCode == 123) return false;
+            if(e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) return false;
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
+        }
+    </script>
+
+    <style>
+        /* --- ESTILOS VISUALES --- */
+        body { margin: 0; background-color: #050505; font-family: 'Segoe UI', sans-serif; color: #ddd; overflow-x: hidden; display: flex; flex-direction: column; }
+        
+        /* Contenedor de la App (Pantalla completa al inicio) */
+        #app-wrapper {
+            display: flex; width: 100%; height: 100vh;
+            border-bottom: 2px solid #222;
+        }
+        
+        #canvas-container {
+            flex: 3; display: flex; justify-content: center; align-items: center;
+            background-color: #000; 
+            padding: 20px; transition: background-color 0.2s;
+            overflow: hidden; /* Vital para evitar scrollbars */
+        }
+        canvas { 
+            box-shadow: 0 0 60px rgba(0,255,255,0.1); 
+            border-radius: 50%; 
+            max-width: 95%; max-height: 95%; 
+        }
+        
+        #controls-container {
+            flex: 2; min-width: 340px; background-color: #111; padding: 20px;
+            overflow-y: auto; box-shadow: -5px 0 20px rgba(0,0,0,0.5); border-left: 1px solid #222;
+        }
+
+        h2 { color: #00FFFF; margin-bottom: 20px; text-align: center; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,255,255,0.3); }
+        
+        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; }
+        .export-btn {
+            flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+            transition: transform 0.1s, filter 0.2s;
+        }
+        .export-btn:hover { filter: brightness(1.2); }
+        .export-btn:active { transform: scale(0.98); }
+        #btnPng { background-color: #00FFFF; color: #000; } 
+        #btnJpg { background-color: #FF00FF; color: #fff; } 
+
+        .control-group { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 18px; }
+        .control-row { display: flex; align-items: center; margin-bottom: 10px; font-size: 0.9em; }
+        .control-label { flex: 1; color: #ccc; font-weight: 500; }
+        
+        input[type=range] { flex-grow: 2; cursor: pointer; margin-right: 10px; accent-color: #00FFFF; }
+        input[type=color] { border: none; width: 50px; height: 30px; border-radius: 4px; cursor: pointer; padding: 0; }
+        
+        .value-display { width: 35px; text-align: center; font-family: monospace; font-weight: bold; color: #fff; }
+
+        #playGenesis {
+            background: none; border: 1px solid #00FFFF; color: #00FFFF; 
+            border-radius: 50%; width: 30px; height: 30px; cursor: pointer; margin-right: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.2s;
+        }
+        #playGenesis:hover { background: #00FFFF; color: #000; }
+
+        /* --- SECCIÓN DE CONTENIDO (Debajo de la app) --- */
+        .content-section {
+            max-width: 900px; margin: 0 auto; padding: 60px 20px;
+        }
+        
+        .ad-placeholder {
+            width: 100%; height: 120px; background: #0f0f0f; margin: 40px 0;
+            border: 1px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.8em;
+        }
+
+        article h2 { color: #00FFFF; border-left: 4px solid #FF00FF; padding-left: 15px; margin-top: 50px; font-size: 1.8em;}
+        article h3 { color: #eee; margin-top: 30px; font-size: 1.4em; }
+        article p { margin-bottom: 20px; font-size: 1.1em; color: #ccc; line-height: 1.8; text-align: justify; }
+        article strong { color: #fff; }
+
+        /* Footer */
+        footer {
+            background-color: #000; padding: 50px 20px; text-align: center; border-top: 1px solid #222; font-size: 0.9em; color: #666;
+        }
+        footer a { color: #888; text-decoration: none; margin: 0 10px; }
+        footer a:hover { color: #00FFFF; }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            #app-wrapper { flex-direction: column; height: auto; }
+            #canvas-container { height: 50vh; }
+            #controls-container { height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-wrapper">
+    <div id="canvas-container">
+        <canvas id="yantraCanvas"></canvas>
+    </div>
+
+    <div id="controls-container">
+        <h2>FLOR DE LA VIDA LAB</h2>
+        
+        <div class="btn-group">
+            <button id="btnPng" class="export-btn">💾 PNG</button>
+            <button id="btnJpg" class="export-btn">📸 JPG</button>
+        </div>
+
+        <div id="sliders-dock">
+            
+            <div class="control-group">
+                <h3 style="margin-top:0; color:#eee; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Estética & Luz</h3>
+                <div class="control-row"><span class="control-label">Fondo:</span><input type="color" id="bgColor" value="#050505"></div>
+                <div class="control-row"><span class="control-label">Líneas:</span><input type="color" id="strokeColor" value="#00FFFF"></div>
+                <div class="control-row"><span class="control-label">Relleno:</span><input type="color" id="fillColor" value="#FF00FF"></div>
+            </div>
+
+            <div class="control-group">
+                <h3 style="margin-top:0; color:#eee; font-size:1em; border-bottom:1px solid #444; padding-bottom:5px;">Génesis (Expansión)</h3>
+                <div class="control-row">
+                    <button id="playGenesis" title="Animar Génesis">▶</button>
+                    <span class="control-label">Círculos:</span>
+                    <input type="range" id="genesisRange" min="1" max="61" value="19">
+                    <span id="genesisVal" class="value-display">19</span>
+                </div>
+                <div class="control-row"><span class="control-label">Radio:</span><input type="range" id="radiusRange" min="10" max="150" value="80"><span id="radiusVal" class="value-display">80</span></div>
+                <div class="control-row"><span class="control-label">Grosor:</span><input type="range" id="widthRange" min="1" max="50" value="15"><span id="widthVal" class="value-display">1.5</span></div>
+                <div class="control-row"><span class="control-label">Opacidad:</span><input type="range" id="opacityRange" min="0" max="100" value="10"><span id="opacityVal" class="value-display">10%</span></div>
+            </div>
+
+            <div class="control-group">
+                <div class="control-row"><span class="control-label">Marco Exterior:</span><input type="checkbox" id="checkBorder" checked style="accent-color: #00FFFF; transform: scale(1.5);"></div>
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top:20px;">
+            <a href="../index.html" style="color:#00FFFF; text-decoration:none; font-weight:bold;">← Volver al Hub Central</a>
+        </div>
+    </div>
+</div>
+
+<section class="content-section">
+    
+    <div class="ad-placeholder">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_flor_vida -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="5648942722"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </div>
+
+    <article>
+        <h2>El Patrón de la Creación</h2>
+        <p>La <strong>Flor de la Vida</strong> es considerada por muchos como la geometría sagrada primordial. Este patrón, formado por círculos superpuestos con la misma simetría séxtuple, contiene dentro de sus proporciones todos los aspectos de la vida: las matemáticas, la física, la música y la biología.</p>
+        
+        <h3>Las Etapas del Génesis</h3>
+        <p>Al usar el deslizador de "Expansión" en nuestra herramienta, estás recreando los días de la creación:</p>
+        <ul>
+            <li><strong>La Semilla de la Vida (7 círculos):</strong> Representa los 7 días de la creación. Es la base de toda la estructura.</li>
+            <li><strong>El Huevo de la Vida:</strong> La estructura celular embrionaria básica de todo ser vivo.</li>
+            <li><strong>La Flor de la Vida (19 círculos):</strong> El patrón completo rodeado por dos grandes círculos, simbolizando el límite del universo observable.</li>
+            <li><strong>El Fruto de la Vida (13 círculos ocultos):</strong> Si extiendes el patrón (sube el slider al máximo), revelas la base para los Sólidos Platónicos.</li>
+        </ul>
+
+        <div class="ad-placeholder">
+             <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3150277567590534"
+     crossorigin="anonymous"></script>
+<!-- banner_flor_vida -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3150277567590534"
+     data-ad-slot="5648942722"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        </div>
+
+        <h2>La Conexión con el Árbol de la Vida</h2>
+        <p>La Flor de la Vida no es solo un dibujo bonito; es el plano arquitectónico del misticismo judío (Cábala). Si tomas los centros de los círculos del "Fruto de la Vida" y conectas 10 puntos específicos, obtienes el <strong>Árbol de la Vida</strong>.</p>
+        <p>Este diagrama sagrado representa las 10 <em>Sephirot</em> (emanaciones divinas) y los 22 senderos que conectan el mundo material (Malkuth) con la fuente divina (Kether). Al meditar trazando la Flor de la Vida, estás, literalmente, dibujando la matriz de donde surge el Árbol de la Vida.</p>
+
+        <h3>Cómo usar este Laboratorio</h3>
+        <p>A diferencia de los dibujos en papel, aquí puedes experimentar con la luz. Usa colores neón sobre fondo negro para visualizar cómo la luz se comporta al expandirse desde el centro. Activa el botón de "Play" en el panel de control para ver la animación hipnótica del crecimiento geométrico, perfecta para respiración guiada.</p>
+    </article>
+
+</section>
+
+<footer>
+    <div style="margin-bottom: 30px;">
+        <p style="margin-bottom: 10px; color: #aaa;">¿Te ha inspirado esta herramienta?</p>
+        <a href="https://www.paypal.com/paypalme/pbazan" target="_blank" style="
+            display: inline-block;
+            background-color: #0070BA; 
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9em;
+            box-shadow: 0 4px 15px rgba(0,112,186, 0.3);
+            transition: transform 0.2s;
+        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            ☕ Invítame a un café (PayPal)
+        </a>
+    </div>
+
+    <p>&copy; 2025 Geometría Sagrada Top.</p>
+    <br>
+    <a href="../legal.html#privacidad">Política de Privacidad</a>
+    <a href="../legal.html#terminos">Términos</a>
+    <a href="../legal.html#cookies">Cookies</a>
+    <a href="mailto:geometriasagradatop@gmail.com">Contacto</a>
+</footer>
+
+<script>
+    const canvas = document.getElementById('yantraCanvas');
+    const ctx = canvas.getContext('2d');
+    const canvasContainer = document.getElementById('canvas-container');
+
+    // ESTADO
+    let state = {
+        bg: '#050505', stroke: '#00FFFF', fill: '#FF00FF',
+        genesis: 19, radius: 80, lineWidth: 1.5, fillOpacity: 0.1, showBorder: true
+    };
+
+    let size, cx, cy, baseUnit;
+    let hexPoints = []; 
+    let animationId = null;
+
+    function init() {
+        preCalculateGrid();
+        setupListeners();
+        resizeCanvas();
+    }
+
+    // 1. MATEMÁTICAS SEGURAS (Pre-cálculo)
+    function preCalculateGrid() {
+        hexPoints = [];
+        for (let q = -5; q <= 5; q++) {
+            for (let r = -5; r <= 5; r++) {
+                // Conversión Axial a Cartesiana para red hexagonal
+                const x = q + r * 0.5;
+                const y = r * 0.8660254;
+                const dist = Math.sqrt(x*x + y*y);
+                if (dist < 4.8) {
+                    hexPoints.push({ x: x, y: y, dist: dist });
+                }
+            }
+        }
+        hexPoints.sort((a, b) => a.dist - b.dist);
+    }
+
+    // 2. REDIMENSIONADO SEGURO
+    let resizeTimer;
+    function resizeCanvas() {
+        if (!canvasContainer) return;
+        const w = canvasContainer.offsetWidth;
+        const h = canvasContainer.offsetHeight;
+        if (w === 0 || h === 0) return; 
+
+        size = Math.min(w, h) * 0.95;
+        canvas.width = size;
+        canvas.height = size;
+        cx = size / 2;
+        cy = size / 2;
+        baseUnit = size / 8; 
+        requestAnimationFrame(drawFlower);
+    }
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(resizeCanvas, 100);
+    });
+
+    // 3. DIBUJO RÁPIDO
+    function drawFlower() {
+        ctx.fillStyle = state.bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.strokeStyle = state.stroke;
+        ctx.lineWidth = state.lineWidth;
+        const rgb = hexToRgb(state.fill);
+        ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${state.fillOpacity})`;
+
+        const r = (state.radius / 100) * baseUnit;
+        const count = Math.min(state.genesis, hexPoints.length);
+
+        for (let i = 0; i < count; i++) {
+            const p = hexPoints[i];
+            const px = cx + (p.x * r);
+            const py = cy + (p.y * r);
+            
+            ctx.beginPath();
+            ctx.arc(px, py, r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        if (state.showBorder && count >= 19) {
+            ctx.beginPath(); ctx.arc(cx, cy, r * 3, 0, Math.PI * 2);
+            ctx.lineWidth = state.lineWidth * 2; ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx, cy, r * 3.1, 0, Math.PI * 2);
+            ctx.lineWidth = state.lineWidth; ctx.stroke();
+            ctx.lineWidth = state.lineWidth;
+        }
+    }
+
+    // 4. ANIMACIÓN Y CONTROLES
+    function toggleAnimation() {
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+            document.getElementById('playGenesis').innerText = "▶";
+        } else {
+            document.getElementById('playGenesis').innerText = "⏸";
+            if (state.genesis >= 61) {
+                state.genesis = 1;
+                document.getElementById('genesisRange').value = 1;
+            }
+            animateLoop();
+        }
+    }
+
+    let lastTime = 0;
+    function animateLoop(timestamp) {
+        if (!lastTime) lastTime = timestamp;
+        const elapsed = timestamp - lastTime;
+        if (elapsed > 60) {
+            if (state.genesis < 61) {
+                state.genesis++;
+                document.getElementById('genesisRange').value = state.genesis;
+                document.getElementById('genesisVal').innerText = state.genesis;
+                drawFlower();
+                lastTime = timestamp;
+                animationId = requestAnimationFrame(animateLoop);
+            } else {
+                toggleAnimation();
+            }
+        } else {
+            animationId = requestAnimationFrame(animateLoop);
+        }
+    }
+
+    function setupListeners() {
+        const bind = (id, prop, type = 'val') => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', (e) => {
+                let v = e.target.value;
+                if (type === 'int') v = parseInt(v);
+                if (type === 'float') v = parseInt(v) / 10;
+                if (type === 'percent') v = parseInt(v) / 100;
+                
+                state[prop] = v;
+                
+                const display = document.getElementById(id.replace('Range', 'Val'));
+                if (display) display.innerText = (type === 'percent' ? parseInt(e.target.value) + '%' : state[prop]);
+                if (prop === 'bg') { if(canvasContainer) canvasContainer.style.backgroundColor = state.bg; }
+                
+                requestAnimationFrame(drawFlower);
+            });
+        };
+
+        bind('bgColor', 'bg');
+        bind('strokeColor', 'stroke');
+        bind('fillColor', 'fill');
+        bind('genesisRange', 'genesis', 'int');
+        bind('radiusRange', 'radius', 'int');
+        bind('widthRange', 'lineWidth', 'float');
+        bind('opacityRange', 'fillOpacity', 'percent');
+
+        document.getElementById('checkBorder').addEventListener('change', (e) => {
+            state.showBorder = e.target.checked;
+            requestAnimationFrame(drawFlower);
+        });
+
+        document.getElementById('playGenesis').addEventListener('click', toggleAnimation);
+        document.getElementById('btnPng').addEventListener('click', () => download('png'));
+        document.getElementById('btnJpg').addEventListener('click', () => download('jpeg'));
+    }
+
+    function download(ext) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'destination-over';
+        ctx.fillStyle = state.bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const link = document.createElement('a');
+        link.download = `flor_vida.${ext}`;
+        link.href = canvas.toDataURL('image/' + ext, 0.9);
+        link.click();
+        ctx.restore();
+        drawFlower();
+    }
+
+    function hexToRgb(hex) {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return { r, g, b };
+    }
+
+    init();
+</script>
+</body>
+</html>
